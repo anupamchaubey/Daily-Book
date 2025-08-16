@@ -1,5 +1,6 @@
 package com.DailyBook.controller;
 
+import com.DailyBook.dto.LoginRequest;
 import com.DailyBook.dto.RegisterRequest;
 import com.DailyBook.model.User;
 import com.DailyBook.repository.UserRepository;
@@ -22,5 +23,11 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request){
         return ResponseEntity.ok(authService.register(request));
+    }
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody LoginRequest request){
+        System.out.println("Inside AuthController.login");
+
+        return ResponseEntity.ok(authService.login(request));
     }
 }
