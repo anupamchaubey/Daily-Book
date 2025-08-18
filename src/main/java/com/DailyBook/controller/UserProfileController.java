@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/profile")
 @RequiredArgsConstructor
@@ -26,5 +28,16 @@ public class UserProfileController {
             @RequestBody UserProfileRequest request,
             Authentication authentication) {
         return userProfileService.updateProfile(authentication.getName(), request);
+    }
+
+    @GetMapping("/search")
+    public List<UserProfileResponse> searchUsers(@RequestParam String q) {
+        return userProfileService.searchUsers(q);
+    }
+
+    // Get another user's profile by username
+    @GetMapping("/{username}")
+    public UserProfileResponse getUserProfile(@PathVariable String username) {
+        return userProfileService.getByUsername(username);
     }
 }
