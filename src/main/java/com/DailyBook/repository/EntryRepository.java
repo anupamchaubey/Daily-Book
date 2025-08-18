@@ -14,6 +14,8 @@ public interface EntryRepository extends MongoRepository<Entry, String> {
 
     List<Entry> findByUserId(String userId);
 
+    Page<Entry> findByUserIdInAndVisibilityOrderByCreatedAtDesc(List<String> userIds, Entry.Visibility visibility, Pageable pageable);
+
 
     // ✅ Get all public entries (latest first)
     Page<Entry> findByVisibilityOrderByCreatedAtDesc(Visibility visibility, Pageable pageable);

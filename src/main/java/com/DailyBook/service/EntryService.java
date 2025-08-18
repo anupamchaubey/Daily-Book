@@ -1,4 +1,3 @@
-// com/DailyBook/service/EntryService.java
 package com.DailyBook.service;
 
 import com.DailyBook.dto.EntryRequest;
@@ -33,7 +32,6 @@ public class EntryService {
                 .tags(request.getTags())
                 .visibility(request.getVisibility())
                 .build();
-
         return toResponse(entryRepository.save(entry));
     }
 
@@ -54,22 +52,20 @@ public class EntryService {
         return toResponse(entry);
     }
 
-    // ✅ Update entry (only if belongs to user)
+    // ✅ Update entry
     public EntryResponse updateEntry(String entryId, EntryRequest request, String userId) {
         Entry existing = getEntryOrThrow(entryId);
         if (!existing.getUserId().equals(userId)) {
             throw new EntryNotFoundException("Entry not found for this user");
         }
-
         existing.setTitle(request.getTitle());
         existing.setContent(request.getContent());
         existing.setTags(request.getTags());
         existing.setVisibility(request.getVisibility());
-
         return toResponse(entryRepository.save(existing));
     }
 
-    // ✅ Delete entry (only if belongs to user)
+    // ✅ Delete entry
     public void deleteEntry(String entryId, String userId) {
         Entry entry = getEntryOrThrow(entryId);
         if (!entry.getUserId().equals(userId)) {
@@ -78,7 +74,7 @@ public class EntryService {
         entryRepository.delete(entry);
     }
 
-    // ✅ Public: list entries (latest first)
+    // ✅ Public: list entries
     public Page<EntryResponse> listPublic(Integer page, Integer size, String tag) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Entry> entries = (tag == null || tag.isBlank())
@@ -87,7 +83,7 @@ public class EntryService {
         return entries.map(this::toResponse);
     }
 
-    // ✅ Public: list entries by username (latest first)
+    // ✅ Public: list entries by username
     public Page<EntryResponse> listPublicByUsername(String username, Integer page, Integer size) {
         String userId = userProfileRepository.findByUsername(username)
                 .map(UserProfile::getId)
@@ -113,7 +109,6 @@ public class EntryService {
     // 🔹 Mapper
     private EntryResponse toResponse(Entry entry) {
         UserProfile profile = userProfileRepository.findById(entry.getUserId()).orElse(null);
-
         return EntryResponse.builder()
                 .id(entry.getId())
                 .title(entry.getTitle())
@@ -126,5 +121,10 @@ public class EntryService {
                 .authorUsername(profile != null ? profile.getUsername() : "Unknown")
                 .authorProfilePicture(profile != null ? profile.getProfilePicture() : null)
                 .build();
+    }
+
+    // ✅ Simplified feed: now only returns public entries
+    public Page<EntryResponse> listVisibleEntries(String viewerId, Integer page, Integer size, String tag) {
+        return listPublic(page, size, tag);
     }
 }

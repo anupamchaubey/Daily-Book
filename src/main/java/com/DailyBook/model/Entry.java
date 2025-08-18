@@ -35,7 +35,9 @@ public class Entry {
     private Instant updatedAt;
 
     public enum Visibility {
-        PRIVATE,
-        PUBLIC
+        PUBLIC,       // everyone can see
+        PRIVATE,      // only the owner
+        FOLLOWERS_ONLY // only followers
     }
+
 }
