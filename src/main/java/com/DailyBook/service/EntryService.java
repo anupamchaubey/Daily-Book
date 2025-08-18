@@ -1,3 +1,4 @@
+// com/DailyBook/service/EntryService.java
 package com.DailyBook.service;
 
 import com.DailyBook.dto.EntryRequest;
@@ -8,6 +9,9 @@ import com.DailyBook.model.UserProfile;
 import com.DailyBook.repository.EntryRepository;
 import com.DailyBook.repository.UserProfileRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,8 +34,7 @@ public class EntryService {
                 .visibility(request.getVisibility())
                 .build();
 
-        Entry saved = entryRepository.save(entry);
-        return toResponse(saved);
+        return toResponse(entryRepository.save(entry));
     }
 
     // ✅ Get all entries of logged-in user
@@ -42,7 +45,7 @@ public class EntryService {
                 .collect(Collectors.toList());
     }
 
-    // ✅ Get entry by ID for a user (ownership check)
+    // ✅ Get entry by ID (ownership check)
     public EntryResponse getEntryByIdForUser(String entryId, String userId) {
         Entry entry = getEntryOrThrow(entryId);
         if (!entry.getUserId().equals(userId)) {
@@ -63,8 +66,7 @@ public class EntryService {
         existing.setTags(request.getTags());
         existing.setVisibility(request.getVisibility());
 
-        Entry updated = entryRepository.save(existing);
-        return toResponse(updated);
+        return toResponse(entryRepository.save(existing));
     }
 
     // ✅ Delete entry (only if belongs to user)
@@ -76,13 +78,39 @@ public class EntryService {
         entryRepository.delete(entry);
     }
 
-    // 🔹 Helper: fetch or throw exception
+    // ✅ Public: list entries (latest first)
+    public Page<EntryResponse> listPublic(Integer page, Integer size, String tag) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Entry> entries = (tag == null || tag.isBlank())
+                ? entryRepository.findByVisibilityOrderByCreatedAtDesc(Entry.Visibility.PUBLIC, pageable)
+                : entryRepository.findByVisibilityAndTagsContainingIgnoreCase(Entry.Visibility.PUBLIC, tag, pageable);
+        return entries.map(this::toResponse);
+    }
+
+    // ✅ Public: list entries by username (latest first)
+    public Page<EntryResponse> listPublicByUsername(String username, Integer page, Integer size) {
+        String userId = userProfileRepository.findByUsername(username)
+                .map(UserProfile::getId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Pageable pageable = PageRequest.of(page, size);
+        return entryRepository.findByUserIdAndVisibilityOrderByCreatedAtDesc(userId, Entry.Visibility.PUBLIC, pageable)
+                .map(this::toResponse);
+    }
+
+    // ✅ Public: search entries
+    public Page<EntryResponse> searchPublic(String q, Integer page, Integer size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return entryRepository.searchPublic(Entry.Visibility.PUBLIC, q, pageable)
+                .map(this::toResponse);
+    }
+
+    // 🔹 Helper
     private Entry getEntryOrThrow(String entryId) {
         return entryRepository.findById(entryId)
                 .orElseThrow(() -> new EntryNotFoundException("Entry not found with id: " + entryId));
     }
 
-    // 🔹 Mapper: Entity → Response DTO (with author info)
+    // 🔹 Mapper
     private EntryResponse toResponse(Entry entry) {
         UserProfile profile = userProfileRepository.findById(entry.getUserId()).orElse(null);
 
