@@ -17,4 +17,9 @@ public class EntryResponse {
     private Entry.Visibility visibility;
     private Instant createdAt;
     private Instant updatedAt;
+
+    // 👤 Author Info
+    private String authorId;
+    private String authorUsername;
+    private String authorProfilePicture;
 }

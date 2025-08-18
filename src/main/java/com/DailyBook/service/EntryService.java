@@ -3,7 +3,9 @@ package com.DailyBook.service;
 import com.DailyBook.dto.EntryRequest;
 import com.DailyBook.dto.EntryResponse;
 import com.DailyBook.model.Entry;
+import com.DailyBook.model.UserProfile;
 import com.DailyBook.repository.EntryRepository;
+import com.DailyBook.repository.UserProfileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +18,7 @@ import java.util.stream.Collectors;
 public class EntryService {
 
     public final EntryRepository entryRepository;
+    private final UserProfileRepository userProfileRepository;
 
     public EntryResponse createEntry(EntryRequest request, String userId) {
         Entry entry = Entry.builder()
@@ -54,8 +57,10 @@ public class EntryService {
         entryRepository.deleteById(entryId);
     }
 
-    // ✅ Mapper: Entity → Response DTO
+    // ✅ Mapper: Entity → Response DTO (with Author Info)
     private EntryResponse toResponse(Entry entry) {
+        UserProfile profile = userProfileRepository.findById(entry.getUserId()).orElse(null);
+
         return EntryResponse.builder()
                 .id(entry.getId())
                 .title(entry.getTitle())
@@ -64,6 +69,9 @@ public class EntryService {
                 .visibility(entry.getVisibility())
                 .createdAt(entry.getCreatedAt())
                 .updatedAt(entry.getUpdatedAt())
+                .authorId(entry.getUserId())
+                .authorUsername(profile != null ? profile.getUsername() : "Unknown")
+                .authorProfilePicture(profile != null ? profile.getProfilePicture() : null)
                 .build();
     }
 }
