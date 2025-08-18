@@ -32,38 +32,22 @@ public class EntryController {
 
     // ✅ Get entry by ID
     @GetMapping("/{id}")
-    public EntryResponse getEntry(@Valid @PathVariable String id) {
-        return entryService.getEntryById(id)
-                .orElseThrow(() -> new RuntimeException("Entry not found"));
+    public EntryResponse getEntry(@PathVariable String id, Authentication authentication) {
+        return entryService.getEntryByIdForUser(id, authentication.getName());
     }
 
     // ✅ Update entry
     @PutMapping("/{id}")
-    public EntryResponse updateEntry(@Valid @PathVariable String id,
-                                     @RequestBody EntryRequest request,
+    public EntryResponse updateEntry(@PathVariable String id,
+                                     @Valid @RequestBody EntryRequest request,
                                      Authentication authentication) {
-
-        Entry existing = entryService.entryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Entry not found"));
-
-        if (!existing.getUserId().equals(authentication.getName())) {
-            throw new RuntimeException("You are not allowed to edit this entry");
-        }
-
-        return entryService.updateEntry(existing, request);
+        return entryService.updateEntry(id, request, authentication.getName());
     }
 
     // ✅ Delete entry
     @DeleteMapping("/{id}")
-    public String deleteEntry(@Valid @PathVariable String id, Authentication authentication) {
-        Entry existing = entryService.entryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Entry not found"));
-
-        if (!existing.getUserId().equals(authentication.getName())) {
-            throw new RuntimeException("You are not allowed to delete this entry");
-        }
-
-        entryService.deleteEntry(id);
+    public String deleteEntry(@PathVariable String id, Authentication authentication) {
+        entryService.deleteEntry(id, authentication.getName());
         return "Entry deleted successfully";
     }
 }
