@@ -4,6 +4,7 @@ import com.DailyBook.dto.EntryRequest;
 import com.DailyBook.dto.EntryResponse;
 import com.DailyBook.model.Entry;
 import com.DailyBook.service.EntryService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +20,7 @@ public class EntryController {
 
     // ✅ Create Entry
     @PostMapping
-    public EntryResponse createEntry(@RequestBody EntryRequest request, Authentication authentication) {
+    public EntryResponse createEntry(@Valid @RequestBody EntryRequest request, Authentication authentication) {
         return entryService.createEntry(request, authentication.getName());
     }
 
@@ -31,14 +32,14 @@ public class EntryController {
 
     // ✅ Get entry by ID
     @GetMapping("/{id}")
-    public EntryResponse getEntry(@PathVariable String id) {
+    public EntryResponse getEntry(@Valid @PathVariable String id) {
         return entryService.getEntryById(id)
                 .orElseThrow(() -> new RuntimeException("Entry not found"));
     }
 
     // ✅ Update entry
     @PutMapping("/{id}")
-    public EntryResponse updateEntry(@PathVariable String id,
+    public EntryResponse updateEntry(@Valid @PathVariable String id,
                                      @RequestBody EntryRequest request,
                                      Authentication authentication) {
 
@@ -54,7 +55,7 @@ public class EntryController {
 
     // ✅ Delete entry
     @DeleteMapping("/{id}")
-    public String deleteEntry(@PathVariable String id, Authentication authentication) {
+    public String deleteEntry(@Valid @PathVariable String id, Authentication authentication) {
         Entry existing = entryService.entryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Entry not found"));
 
