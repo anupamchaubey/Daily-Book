@@ -1,10 +1,13 @@
 package com.DailyBook.config;
 
+import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,6 +20,8 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     private final JwtTokenProvider jwtTokenProvider;
     private final CustomUserDetailsService customUserDetailsService;
@@ -39,10 +44,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
-            username = jwtTokenProvider.getUsernameFromJwt(token);
+            try {
+                username = jwtTokenProvider.getUsernameFromJwt(token);
+            } catch (MalformedJwtException ex) {
+                logger.warn("Invalid JWT token: {}", ex.getMessage());
+                // Optional: send 401 Unauthorized immediately and do not proceed
+                // response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                // return;
+            } catch (Exception ex) {
+                logger.error("Error extracting username from JWT", ex);
+            }
         }
 
-        // Only authenticate if username is extracted and not already authenticated
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
 
