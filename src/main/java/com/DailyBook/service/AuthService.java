@@ -42,7 +42,6 @@ public class AuthService {
         return "User registration done ...";
     }
     public String login(LoginRequest request){
-        System.out.println("🔑 AuthService.login called for: " + request.getUsername());
 
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -51,16 +50,15 @@ public class AuthService {
                             request.getPassword()
                     )
             );
-            System.out.println("✅ Authentication successful for: " + request.getUsername());
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             String token = jwtTokenProvider.generateToken(request.getUsername());
-            System.out.println("🎟️ Generated JWT: " + token);
+
             return token;
         } catch (Exception e) {
-            System.out.println("❌ Authentication failed: " + e.getMessage());
-            throw e; // let Spring handle and return 403
+
+            throw e;
         }
     }
 

@@ -1,5 +1,7 @@
 package com.DailyBook.model;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,9 +20,9 @@ public class User {
     @Id
     private String id;
 
-    private String username;
-    private String password;
-    private String email;
+    @NotBlank private String username;
+    @NotBlank private String password;
+    @Email private String email;
 
     private Set<String> roles;
 }

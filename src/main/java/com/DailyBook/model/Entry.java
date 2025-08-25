@@ -16,16 +16,12 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Entry {
-
     @Id
     private String id;
-
-    private String userId;  // Owner of the entry
+    private String userId;
     private String title;
     private String content;
-
     private List<String> tags;
-
     private Visibility visibility = Visibility.PRIVATE;
 
     @CreatedDate
@@ -35,9 +31,9 @@ public class Entry {
     private Instant updatedAt;
 
     public enum Visibility {
-        PUBLIC,       // everyone can see
-        PRIVATE,      // only the owner
-        FOLLOWERS_ONLY // only followers
+        PUBLIC,
+        PRIVATE,
+        FOLLOWERS_ONLY
     }
-
 }
+

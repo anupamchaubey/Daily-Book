@@ -13,13 +13,12 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserProfile {
-
     @Id
-    private String id;  // same as User.id (for easy mapping)
+    private String id;
 
-    private String username;   // display name
-    private String bio;        // about user
-    private String profilePicture; // URL or Base64 (for now simple string)
+    private String username;
+    private String bio;
+    private String profilePicture;
 
     private Instant joinedAt;
 }
