@@ -3,6 +3,7 @@ package com.DailyBook.controller;
 import com.DailyBook.dto.UserProfileRequest;
 import com.DailyBook.dto.UserProfileResponse;
 import com.DailyBook.service.UserProfileService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +25,7 @@ public class UserProfileController {
 
     // ✅ Update logged-in user's profile
     @PutMapping
-    public UserProfileResponse updateMyProfile(
+    public UserProfileResponse updateMyProfile(@Valid
             @RequestBody UserProfileRequest request,
             Authentication authentication) {
         return userProfileService.updateProfile(authentication.getName(), request);

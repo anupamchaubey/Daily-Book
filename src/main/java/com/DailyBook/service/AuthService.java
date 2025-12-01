@@ -3,7 +3,10 @@ package com.DailyBook.service;
 import com.DailyBook.config.JwtTokenProvider;
 import com.DailyBook.dto.LoginRequest;
 import com.DailyBook.dto.RegisterRequest;
+import com.DailyBook.exception.UserAlreadyExistsException;
 import com.DailyBook.model.User;
+import com.DailyBook.model.UserProfile;
+import com.DailyBook.repository.UserProfileRepository;
 import com.DailyBook.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,54 +16,60 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
+    private final UserProfileRepository userProfileRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
 
-    public String register(RegisterRequest request){
-        if(userRepository.existsByEmail(request.getEmail())){
-            throw new RuntimeException("email already exists");
+    public String register(RegisterRequest request) {
+
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new UserAlreadyExistsException("Email already exists");
         }
-        if(userRepository.existsByUsername(request.getUsername())){
-            throw new RuntimeException("username already exists");
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new UserAlreadyExistsException("Username already exists");
         }
 
-        User user= User.builder()
+        // Save user once
+        User user = User.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .email(request.getEmail())
                 .roles(Collections.singleton("USER"))
                 .build();
         userRepository.save(user);
+
+        // Create bare profile (using username as profile id)
+        UserProfile profile = UserProfile.builder()
+                .id(user.getUsername())
+                .username(user.getUsername())
+                .joinedAt(Instant.now())
+                .build();
+        userProfileRepository.save(profile);
+
         return "User registration done ...";
     }
-    public String login(LoginRequest request){
 
-        try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getUsername(),
-                            request.getPassword()
-                    )
-            );
+    public String login(LoginRequest request) {
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getUsername(),
+                        request.getPassword()
+                )
+        );
 
-            String token = jwtTokenProvider.generateToken(request.getUsername());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            return token;
-        } catch (Exception e) {
-
-            throw e;
-        }
+        // Use the authenticated principal’s name
+        return jwtTokenProvider.generateToken(authentication.getName());
     }
-
-
 }

@@ -31,7 +31,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173")); // ✅ Replace with your frontend URL
+        configuration.setAllowedOrigins(List.of("http://127.0.0.1:5174", "http://localhost:5174")); // ✅ Replace with your frontend URL
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*")); // Or specify headers like "Authorization", "Content-Type"
         configuration.setAllowCredentials(true);
@@ -50,8 +50,11 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/api/public/**",
+                                "/api/profile/search",
+                                "/api/profile/{username}",
                                 "/api/entries/public/**",
                                 "/api/entries/feed",
+                                "/api/users/**",
                                 "/error"
                         ).permitAll()
                         .anyRequest().authenticated()

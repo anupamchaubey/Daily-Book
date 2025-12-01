@@ -24,13 +24,15 @@ public class EntryService {
     private final UserProfileRepository userProfileRepository;
 
     // ✅ Create Entry
-    public EntryResponse createEntry(EntryRequest request, String userId) {
+    public EntryResponse createEntry(EntryRequest request, String userId /* actually username */) {
         Entry entry = Entry.builder()
                 .userId(userId)
                 .title(request.getTitle())
                 .content(request.getContent())
                 .tags(request.getTags())
-                .visibility(request.getVisibility())
+                .visibility(request.getVisibility() != null
+                        ? request.getVisibility()
+                        : Entry.Visibility.PRIVATE)
                 .build();
         return toResponse(entryRepository.save(entry));
     }
@@ -61,7 +63,9 @@ public class EntryService {
         existing.setTitle(request.getTitle());
         existing.setContent(request.getContent());
         existing.setTags(request.getTags());
-        existing.setVisibility(request.getVisibility());
+        if (request.getVisibility() != null) {
+            existing.setVisibility(request.getVisibility());
+        }
         return toResponse(entryRepository.save(existing));
     }
 
@@ -83,14 +87,12 @@ public class EntryService {
         return entries.map(this::toResponse);
     }
 
-    // ✅ Public: list entries by username
+    // ✅ Public: list entries by username (author page)
     public Page<EntryResponse> listPublicByUsername(String username, Integer page, Integer size) {
-        String userId = userProfileRepository.findByUsername(username)
-                .map(UserProfile::getId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
         Pageable pageable = PageRequest.of(page, size);
-        return entryRepository.findByUserIdAndVisibilityOrderByCreatedAtDesc(userId, Entry.Visibility.PUBLIC, pageable)
-                .map(this::toResponse);
+        Page<Entry> entries = entryRepository
+                .findByUserIdAndVisibilityOrderByCreatedAtDesc(username, Entry.Visibility.PUBLIC, pageable);
+        return entries.map(this::toResponse);
     }
 
     // ✅ Public: search entries
@@ -123,7 +125,7 @@ public class EntryService {
                 .build();
     }
 
-    // ✅ Simplified feed: now only returns public entries
+    // ✅ Simplified feed: public entries only
     public Page<EntryResponse> listVisibleEntries(String viewerId, Integer page, Integer size, String tag) {
         return listPublic(page, size, tag);
     }
