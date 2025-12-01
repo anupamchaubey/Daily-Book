@@ -54,6 +54,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/**",
+                                "/",
                                 "/api/public/**",
                                 "/api/profile/search",
                                 // ✅ pattern for /api/profile/{username} (public profile)
