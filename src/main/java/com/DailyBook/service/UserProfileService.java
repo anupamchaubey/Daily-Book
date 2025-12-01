@@ -18,14 +18,13 @@ public class UserProfileService {
     private final UserProfileRepository userProfileRepository;
 
     // ✅ Get logged-in user's profile
-    public UserProfileResponse getProfile(String userId) {
+    public UserProfileResponse getProfile(String userId /* actually username */) {
         UserProfile profile = userProfileRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Profile not found"));
-
+                .orElseThrow(() -> new RuntimeException("Profile not found")); // or custom ProfileNotFoundException
         return toResponse(profile);
     }
 
-    // ✅ Update logged-in user's profile
+    // ✅ Update logged-in user's profile (username is NOT changed here)
     public UserProfileResponse updateProfile(String userId, UserProfileRequest request) {
         UserProfile profile = userProfileRepository.findById(userId)
                 .orElse(UserProfile.builder()
@@ -33,9 +32,15 @@ public class UserProfileService {
                         .joinedAt(Instant.now())
                         .build());
 
-        profile.setUsername(request.getUsername());
+        // Keep username in sync with authenticated user
+        profile.setUsername(userId);
         profile.setBio(request.getBio());
         profile.setProfilePicture(request.getProfilePicture());
+
+        // Ensure joinedAt is not null for older profiles
+        if (profile.getJoinedAt() == null) {
+            profile.setJoinedAt(Instant.now());
+        }
 
         UserProfile saved = userProfileRepository.save(profile);
         return toResponse(saved);
@@ -52,7 +57,7 @@ public class UserProfileService {
     // 🔹 Get user profile by username
     public UserProfileResponse getByUsername(String username) {
         UserProfile profile = userProfileRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found")); // or custom exception
         return toResponse(profile);
     }
 
