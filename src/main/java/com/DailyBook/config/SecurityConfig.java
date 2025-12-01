@@ -33,7 +33,8 @@ public class SecurityConfig {
         // 🔹 adjust port to your Vite dev port (5173 or 5174)
         configuration.setAllowedOrigins(List.of(
                 "http://127.0.0.1:5173",
-                "http://localhost:5173"
+                "http://localhost:5173",
+                "https://daily-book.netlify.app"
         ));
 
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
@@ -57,7 +58,6 @@ public class SecurityConfig {
                                 "/",
                                 "/api/public/**",
                                 "/api/profile/search",
-                                // ✅ pattern for /api/profile/{username} (public profile)
                                 "/api/profile/*",
                                 "/api/entries/public/**",
                                 "/api/entries/feed",
