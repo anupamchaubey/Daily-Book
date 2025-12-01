@@ -23,7 +23,6 @@ public class EntryService {
     private final EntryRepository entryRepository;
     private final UserProfileRepository userProfileRepository;
 
-    // ✅ Create Entry
     public EntryResponse createEntry(EntryRequest request, String userId /* actually username */) {
         Entry entry = Entry.builder()
                 .userId(userId)
@@ -37,7 +36,6 @@ public class EntryService {
         return toResponse(entryRepository.save(entry));
     }
 
-    // ✅ Get all entries of logged-in user
     public List<EntryResponse> getUserEntries(String userId) {
         return entryRepository.findByUserId(userId)
                 .stream()
@@ -45,7 +43,6 @@ public class EntryService {
                 .collect(Collectors.toList());
     }
 
-    // ✅ Get entry by ID (ownership check)
     public EntryResponse getEntryByIdForUser(String entryId, String userId) {
         Entry entry = getEntryOrThrow(entryId);
         if (!entry.getUserId().equals(userId)) {
@@ -54,7 +51,7 @@ public class EntryService {
         return toResponse(entry);
     }
 
-    // ✅ Update entry
+
     public EntryResponse updateEntry(String entryId, EntryRequest request, String userId) {
         Entry existing = getEntryOrThrow(entryId);
         if (!existing.getUserId().equals(userId)) {
@@ -69,7 +66,6 @@ public class EntryService {
         return toResponse(entryRepository.save(existing));
     }
 
-    // ✅ Delete entry
     public void deleteEntry(String entryId, String userId) {
         Entry entry = getEntryOrThrow(entryId);
         if (!entry.getUserId().equals(userId)) {
@@ -78,7 +74,7 @@ public class EntryService {
         entryRepository.delete(entry);
     }
 
-    // ✅ Public: list entries
+
     public Page<EntryResponse> listPublic(Integer page, Integer size, String tag) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Entry> entries = (tag == null || tag.isBlank())
@@ -87,7 +83,6 @@ public class EntryService {
         return entries.map(this::toResponse);
     }
 
-    // ✅ Public: list entries by username (author page)
     public Page<EntryResponse> listPublicByUsername(String username, Integer page, Integer size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Entry> entries = entryRepository
@@ -95,20 +90,18 @@ public class EntryService {
         return entries.map(this::toResponse);
     }
 
-    // ✅ Public: search entries
     public Page<EntryResponse> searchPublic(String q, Integer page, Integer size) {
         Pageable pageable = PageRequest.of(page, size);
         return entryRepository.searchPublic(Entry.Visibility.PUBLIC, q, pageable)
                 .map(this::toResponse);
     }
 
-    // 🔹 Helper
+
     private Entry getEntryOrThrow(String entryId) {
         return entryRepository.findById(entryId)
                 .orElseThrow(() -> new EntryNotFoundException("Entry not found with id: " + entryId));
     }
 
-    // 🔹 Mapper
     private EntryResponse toResponse(Entry entry) {
         UserProfile profile = userProfileRepository.findById(entry.getUserId()).orElse(null);
         return EntryResponse.builder()
@@ -124,8 +117,6 @@ public class EntryService {
                 .authorProfilePicture(profile != null ? profile.getProfilePicture() : null)
                 .build();
     }
-
-    // ✅ Simplified feed: public entries only
     public Page<EntryResponse> listVisibleEntries(String viewerId, Integer page, Integer size, String tag) {
         return listPublic(page, size, tag);
     }
