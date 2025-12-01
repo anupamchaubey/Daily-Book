@@ -26,14 +26,18 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomUserDetailsService customUserDetailsService;
 
-
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://127.0.0.1:5174", "http://localhost:5174")); // ✅ Replace with your frontend URL
+
+        // 🔹 adjust port to your Vite dev port (5173 or 5174)
+        configuration.setAllowedOrigins(List.of(
+                "http://127.0.0.1:5174",
+                "http://localhost:5174"
+        ));
+
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*")); // Or specify headers like "Authorization", "Content-Type"
+        configuration.setAllowedHeaders(List.of("*")); // or narrower: List.of("Authorization", "Content-Type")
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -44,14 +48,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // 👈 enable CORS here
+                // ✅ just call the bean method; no arguments
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/api/public/**",
                                 "/api/profile/search",
-                                "/api/profile/{username}",
+                                // ✅ pattern for /api/profile/{username} (public profile)
+                                "/api/profile/*",
                                 "/api/entries/public/**",
                                 "/api/entries/feed",
                                 "/api/users/**",
