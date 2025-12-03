@@ -32,6 +32,7 @@ public class EntryService {
                 .visibility(request.getVisibility() != null
                         ? request.getVisibility()
                         : Entry.Visibility.PRIVATE)
+                .imageUrl(request.getImageUrl())
                 .build();
         return toResponse(entryRepository.save(entry));
     }
@@ -62,6 +63,9 @@ public class EntryService {
         existing.setTags(request.getTags());
         if (request.getVisibility() != null) {
             existing.setVisibility(request.getVisibility());
+        }
+        if (request.getImageUrl() != null) {
+            existing.setImageUrl(request.getImageUrl());
         }
         return toResponse(entryRepository.save(existing));
     }
@@ -112,6 +116,7 @@ public class EntryService {
                 .visibility(entry.getVisibility())
                 .createdAt(entry.getCreatedAt())
                 .updatedAt(entry.getUpdatedAt())
+                .imageUrl(entry.getImageUrl())
                 .authorId(entry.getUserId())
                 .authorUsername(profile != null ? profile.getUsername() : "Unknown")
                 .authorProfilePicture(profile != null ? profile.getProfilePicture() : null)

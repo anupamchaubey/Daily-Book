@@ -18,6 +18,8 @@ public class EntryResponse {
     private Instant createdAt;
     private Instant updatedAt;
 
+    private String imageUrl;
+
     // 👤 Author Info
     private String authorId;
     private String authorUsername;

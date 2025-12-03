@@ -22,4 +22,6 @@ public class EntryRequest {
     private List<String> tags;
 
     private Entry.Visibility visibility;
+
+    private String imageUrl;
 }

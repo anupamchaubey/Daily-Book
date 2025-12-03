@@ -24,6 +24,8 @@ public class Entry {
     private List<String> tags;
     private Visibility visibility = Visibility.PRIVATE;
 
+    private String imageUrl;
+
     @CreatedDate
     private Instant createdAt;
 
