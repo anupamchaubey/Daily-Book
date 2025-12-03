@@ -16,15 +16,21 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Entry {
+
     @Id
     private String id;
+
+    // you are storing username here
     private String userId;
+
     private String title;
     private String content;
     private List<String> tags;
+
     private Visibility visibility = Visibility.PRIVATE;
 
-    private String imageUrl;
+    // 🌆 multiple image URLs
+    private List<String> imageUrls;
 
     @CreatedDate
     private Instant createdAt;
@@ -38,4 +44,3 @@ public class Entry {
         FOLLOWERS_ONLY
     }
 }
-

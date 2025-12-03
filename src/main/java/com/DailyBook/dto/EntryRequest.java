@@ -11,17 +11,16 @@ import java.util.List;
 public class EntryRequest {
 
     @NotBlank(message = "Title is required ")
-    @Size(min=3,max = 100,message = "Title must be between 3 and 100 characters")
+    @Size(min = 3, max = 100, message = "Title must be between 3 and 100 characters")
     private String title;
 
-    @NotBlank(message="Content cannot be empty")
-    @Size(min=10,message = "Content must be atleast 10 characters")
+    @NotBlank(message = "Content cannot be empty")
+    @Size(min = 10, message = "Content must be atleast 10 characters")
     private String content;
-
 
     private List<String> tags;
 
     private Entry.Visibility visibility;
 
-    private String imageUrl;
+    private List<String> imageUrls;
 }

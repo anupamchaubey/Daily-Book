@@ -23,7 +23,8 @@ public class EntryService {
     private final EntryRepository entryRepository;
     private final UserProfileRepository userProfileRepository;
 
-    public EntryResponse createEntry(EntryRequest request, String userId /* actually username */) {
+    // userId here is actually the username (from authentication.getName())
+    public EntryResponse createEntry(EntryRequest request, String userId /* username */) {
         Entry entry = Entry.builder()
                 .userId(userId)
                 .title(request.getTitle())
@@ -32,7 +33,7 @@ public class EntryService {
                 .visibility(request.getVisibility() != null
                         ? request.getVisibility()
                         : Entry.Visibility.PRIVATE)
-                .imageUrl(request.getImageUrl())
+                .imageUrls(request.getImageUrls())
                 .build();
         return toResponse(entryRepository.save(entry));
     }
@@ -52,21 +53,24 @@ public class EntryService {
         return toResponse(entry);
     }
 
-
     public EntryResponse updateEntry(String entryId, EntryRequest request, String userId) {
         Entry existing = getEntryOrThrow(entryId);
         if (!existing.getUserId().equals(userId)) {
             throw new EntryNotFoundException("Entry not found for this user");
         }
+
         existing.setTitle(request.getTitle());
         existing.setContent(request.getContent());
         existing.setTags(request.getTags());
+
         if (request.getVisibility() != null) {
             existing.setVisibility(request.getVisibility());
         }
-        if (request.getImageUrl() != null) {
-            existing.setImageUrl(request.getImageUrl());
+
+        if (request.getImageUrls() != null) {
+            existing.setImageUrls(request.getImageUrls());
         }
+
         return toResponse(entryRepository.save(existing));
     }
 
@@ -77,7 +81,6 @@ public class EntryService {
         }
         entryRepository.delete(entry);
     }
-
 
     public Page<EntryResponse> listPublic(Integer page, Integer size, String tag) {
         Pageable pageable = PageRequest.of(page, size);
@@ -100,7 +103,6 @@ public class EntryService {
                 .map(this::toResponse);
     }
 
-
     private Entry getEntryOrThrow(String entryId) {
         return entryRepository.findById(entryId)
                 .orElseThrow(() -> new EntryNotFoundException("Entry not found with id: " + entryId));
@@ -116,12 +118,13 @@ public class EntryService {
                 .visibility(entry.getVisibility())
                 .createdAt(entry.getCreatedAt())
                 .updatedAt(entry.getUpdatedAt())
-                .imageUrl(entry.getImageUrl())
+                .imageUrls(entry.getImageUrls())
                 .authorId(entry.getUserId())
                 .authorUsername(profile != null ? profile.getUsername() : "Unknown")
                 .authorProfilePicture(profile != null ? profile.getProfilePicture() : null)
                 .build();
     }
+
     public Page<EntryResponse> listVisibleEntries(String viewerId, Integer page, Integer size, String tag) {
         return listPublic(page, size, tag);
     }

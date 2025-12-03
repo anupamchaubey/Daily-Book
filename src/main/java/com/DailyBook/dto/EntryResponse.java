@@ -10,6 +10,7 @@ import java.util.List;
 @Data
 @Builder
 public class EntryResponse {
+
     private String id;
     private String title;
     private String content;
@@ -18,7 +19,8 @@ public class EntryResponse {
     private Instant createdAt;
     private Instant updatedAt;
 
-    private String imageUrl;
+    // 🌆 multiple image URLs
+    private List<String> imageUrls;
 
     // 👤 Author Info
     private String authorId;
