@@ -29,11 +29,19 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody LoginRequest request) {
         String token = authService.login(request);
-        Map<String, String> response = new HashMap<>();
+
+        long now = System.currentTimeMillis();
+        long expiresAt = now + 7L * 24 * 60 * 60 * 1000; // 7 days, same as jwt.expiration
+
+        Map<String, Object> response = new HashMap<>();
         response.put("token", token);
+        response.put("expiresAt", expiresAt);
+
         return ResponseEntity.ok(response);
     }
+
+
 
 }
