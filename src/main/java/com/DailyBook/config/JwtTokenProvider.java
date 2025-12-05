@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
+import jakarta.annotation.PostConstruct;
 
 @Component
 public class JwtTokenProvider {
@@ -19,6 +20,15 @@ public class JwtTokenProvider {
 
     @Value("${jwt.expiration}")
     private long jwtExpiration;
+
+    @PostConstruct
+    public void logJwtConfig() {
+        System.out.println("=== JWT CONFIG ===");
+        System.out.println("jwtExpiration = " + jwtExpiration + " ms");
+        System.out.println("≈ " + (jwtExpiration / 1000 / 60 / 60.0) + " hours");
+        System.out.println("==================");
+    }
+
 
     private Key getSigningKey() {
         byte[] decodedKey = Base64.getDecoder().decode(jwtSecret);
