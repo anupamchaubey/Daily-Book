@@ -1,4 +1,3 @@
-// com/DailyBook/controller/PublicProfileController.java
 package com.DailyBook.controller;
 
 import com.DailyBook.dto.EntryResponse;
