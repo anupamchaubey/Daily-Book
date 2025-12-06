@@ -9,19 +9,146 @@ import com.DailyBook.repository.EntryRepository;
 import com.DailyBook.repository.UserProfileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.DailyBook.model.Entry.Visibility.FOLLOWERS_ONLY;
 
 @Service
 @RequiredArgsConstructor
 public class EntryService {
 
+    private final FollowService followService;
     private final EntryRepository entryRepository;
     private final UserProfileRepository userProfileRepository;
+
+    // =========================
+    //  Visibility-aware Get by ID
+    // =========================
+    public EntryResponse getEntryVisibleToViewer(String entryId, String viewerUsername) {
+        Entry entry = getEntryOrThrow(entryId);
+
+        Entry.Visibility visibility = entry.getVisibility();
+        String authorUsername = entry.getUserId(); // you store username here
+
+        // 1) PUBLIC → always allowed
+        if (visibility == Entry.Visibility.PUBLIC) {
+            return toResponse(entry);
+        }
+
+        // 2) Not logged in → cannot see PRIVATE or FOLLOWERS_ONLY
+        if (viewerUsername == null) {
+            throw new EntryNotFoundException("Entry not visible");
+        }
+
+        // 3) Owner can always see
+        if (authorUsername.equals(viewerUsername)) {
+            return toResponse(entry);
+        }
+
+        // 4) Followers-only: allowed only if viewer follows author
+        if (visibility == FOLLOWERS_ONLY &&
+                followService.isFollowing(viewerUsername, authorUsername)) {
+            return toResponse(entry);
+        }
+
+        // 5) Otherwise → behave like "not found"
+        throw new EntryNotFoundException("Entry not visible");
+    }
+
+    // =========================
+    //  Visibility-aware Search
+    // =========================
+    public Page<EntryResponse> searchVisibleEntries(
+            String viewerUsername,
+            String query,
+            Integer page,
+            Integer size
+    ) {
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        // 🔓 Logged-out users: only PUBLIC posts, any author
+        if (viewerUsername == null) {
+            return entryRepository
+                    .searchPublic(Entry.Visibility.PUBLIC, query, pageable)
+                    .map(this::toResponse);
+        }
+
+        // 👥 Logged-in users
+        List<String> following = followService.getFollowingUsernames(viewerUsername);
+
+        // 1️⃣ My posts: all visibilities
+        Page<Entry> mine =
+                entryRepository.searchByUserAndVisibilities(
+                        viewerUsername,
+                        List.of(
+                                Entry.Visibility.PUBLIC,
+                                Entry.Visibility.PRIVATE,
+                                FOLLOWERS_ONLY
+                        ),
+                        query,
+                        pageable
+                );
+
+        // 2️⃣ Public posts from everyone
+        Page<Entry> publicPosts =
+                entryRepository.searchPublic(
+                        Entry.Visibility.PUBLIC,
+                        query,
+                        pageable
+                );
+
+        // 3️⃣ Followers-only posts from people I follow
+        Page<Entry> followerPosts =
+                following.isEmpty()
+                        ? Page.empty(pageable)
+                        : entryRepository.searchByUsersAndVisibilities(
+                        following,
+                        List.of(FOLLOWERS_ONLY),
+                        query,
+                        pageable
+                );
+
+        // 🔄 Merge, dedupe, sort newest-first
+        List<Entry> merged = new ArrayList<>();
+        merged.addAll(mine.getContent());
+        merged.addAll(publicPosts.getContent());
+        merged.addAll(followerPosts.getContent());
+
+        merged = merged.stream()
+                .distinct()
+                .sorted(
+                        Comparator.comparing(Entry::getCreatedAt)
+                                .reversed()
+                )
+                .collect(Collectors.toList());
+
+        // 📄 Manual paging
+        int start = Math.min(page * size, merged.size());
+        int end = Math.min(start + size, merged.size());
+
+        List<EntryResponse> pageContent =
+                (start >= end)
+                        ? List.of()
+                        : merged.subList(start, end)
+                        .stream()
+                        .map(this::toResponse)
+                        .toList();
+
+        return new PageImpl<>(pageContent, pageable, merged.size());
+    }
+
+    // =========================
+    //  CRUD
+    // =========================
 
     // userId here is actually the username (from authentication.getName())
     public EntryResponse createEntry(EntryRequest request, String userId /* username */) {
@@ -35,6 +162,7 @@ public class EntryService {
                         : Entry.Visibility.PRIVATE)
                 .imageUrls(request.getImageUrls())
                 .build();
+
         return toResponse(entryRepository.save(entry));
     }
 
@@ -82,11 +210,16 @@ public class EntryService {
         entryRepository.delete(entry);
     }
 
+    // =========================
+    //  Public listing
+    // =========================
+
     public Page<EntryResponse> listPublic(Integer page, Integer size, String tag) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Entry> entries = (tag == null || tag.isBlank())
                 ? entryRepository.findByVisibilityOrderByCreatedAtDesc(Entry.Visibility.PUBLIC, pageable)
                 : entryRepository.findByVisibilityAndTagsContainingIgnoreCase(Entry.Visibility.PUBLIC, tag, pageable);
+
         return entries.map(this::toResponse);
     }
 
@@ -94,14 +227,83 @@ public class EntryService {
         Pageable pageable = PageRequest.of(page, size);
         Page<Entry> entries = entryRepository
                 .findByUserIdAndVisibilityOrderByCreatedAtDesc(username, Entry.Visibility.PUBLIC, pageable);
+
         return entries.map(this::toResponse);
     }
 
     public Page<EntryResponse> searchPublic(String q, Integer page, Integer size) {
         Pageable pageable = PageRequest.of(page, size);
-        return entryRepository.searchPublic(Entry.Visibility.PUBLIC, q, pageable)
+        return entryRepository
+                .searchPublic(Entry.Visibility.PUBLIC, q, pageable)
                 .map(this::toResponse);
     }
+
+    // =========================
+    //  Feed (visibility-aware)
+    // =========================
+    public Page<EntryResponse> listVisibleEntries(String viewerUsername,
+                                                  Integer page,
+                                                  Integer size,
+                                                  String tag) {
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        // 🔓 logged out -> PUBLIC only
+        if (viewerUsername == null) {
+            return listPublic(page, size, tag);
+        }
+
+        // 👥 logged in
+        List<String> following = followService.getFollowingUsernames(viewerUsername);
+
+        // build allowed visibilities for followed users
+        List<Entry.Visibility> allowed = List.of(
+                Entry.Visibility.PUBLIC,
+                FOLLOWERS_ONLY
+        );
+
+        // followers' posts (PUBLIC + FOLLOWERS_ONLY)
+        Page<Entry> followerPosts = following.isEmpty()
+                ? Page.empty(pageable)
+                : entryRepository.findByUserIdInAndVisibilityIn(
+                following,
+                allowed,
+                pageable
+        );
+
+        // own posts (all visibilities)
+        List<Entry> myEntries = entryRepository.findByUserId(viewerUsername);
+
+        // combine
+        List<Entry> merged = new ArrayList<>();
+        merged.addAll(myEntries);
+        merged.addAll(followerPosts.getContent());
+
+        // remove duplicates & sort newest-first
+        merged = merged.stream()
+                .distinct()
+                .sorted(
+                        Comparator.comparing(Entry::getCreatedAt)
+                                .reversed()
+                )
+                .collect(Collectors.toList());
+
+        // manual pagination
+        int start = Math.min(page * size, merged.size());
+        int end = Math.min(start + size, merged.size());
+
+        List<Entry> pageContent = merged.subList(start, end);
+
+        return new PageImpl<>(
+                pageContent.stream().map(this::toResponse).toList(),
+                pageable,
+                merged.size()
+        );
+    }
+
+    // =========================
+    //  Helpers
+    // =========================
 
     private Entry getEntryOrThrow(String entryId) {
         return entryRepository.findById(entryId)
@@ -110,6 +312,7 @@ public class EntryService {
 
     private EntryResponse toResponse(Entry entry) {
         UserProfile profile = userProfileRepository.findById(entry.getUserId()).orElse(null);
+
         return EntryResponse.builder()
                 .id(entry.getId())
                 .title(entry.getTitle())
@@ -123,9 +326,5 @@ public class EntryService {
                 .authorUsername(profile != null ? profile.getUsername() : "Unknown")
                 .authorProfilePicture(profile != null ? profile.getProfilePicture() : null)
                 .build();
-    }
-
-    public Page<EntryResponse> listVisibleEntries(String viewerId, Integer page, Integer size, String tag) {
-        return listPublic(page, size, tag);
     }
 }

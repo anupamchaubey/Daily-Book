@@ -17,11 +17,16 @@ public class Follow {
     @Id
     private String id;
 
-    // who is following
     private String followerUsername;
-
-    // who is being followed
     private String followeeUsername;
 
+    // NEW FIELD
+    private Status status;
+
     private Instant createdAt;
+
+    public enum Status {
+        PENDING,
+        APPROVED
+    }
 }

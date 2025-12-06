@@ -23,7 +23,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
         System.out.println("🔍 Looking up user: " + username);
-        System.out.println("   → Stored password hash: " + user.getPassword());
+
 
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getUsername())

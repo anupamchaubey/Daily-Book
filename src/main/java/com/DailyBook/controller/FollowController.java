@@ -2,6 +2,7 @@ package com.DailyBook.controller;
 
 import com.DailyBook.service.FollowService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -9,46 +10,71 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.web.bind.annotation.PostMapping;
+
 @RestController
 @RequestMapping("/api/follow")
 @RequiredArgsConstructor
 public class FollowController {
 
+
     private final FollowService followService;
 
-    // ✅ follow a user  (needs JWT)
+    // SEND REQUEST
     @PostMapping("/{username}")
-    public Map<String, String> follow(@PathVariable String username, Authentication authentication) {
-        String me = authentication.getName();
-        followService.follow(me, username);
+    public Map<String, String> follow(@PathVariable String username,
+                                      Authentication auth) {
 
-        Map<String, String> res = new HashMap<>();
-        res.put("message", "Followed " + username);
-        return res;
+        followService.follow(auth.getName(), username);
+
+        return Map.of("message", "Follow request sent");
     }
 
-    // ✅ unfollow a user (needs JWT)
+    // CANCEL FOLLOW / UNFOLLOW
     @DeleteMapping("/{username}")
-    public Map<String, String> unfollow(@PathVariable String username, Authentication authentication) {
-        String me = authentication.getName();
-        followService.unfollow(me, username);
+    public Map<String, String> unfollow(@PathVariable String username,
+                                        Authentication auth) {
 
-        Map<String, String> res = new HashMap<>();
-        res.put("message", "Unfollowed " + username);
-        return res;
+        followService.unfollow(auth.getName(), username);
+
+        return Map.of("message", "Follow removed");
     }
 
-    // ✅ PRIVATE: list usernames I follow
-    @GetMapping("/me/following")
-    public List<String> myFollowing(Authentication authentication) {
-        String me = authentication.getName();
-        return followService.getFollowingUsernames(me);
-    }
-
-    // ✅ PRIVATE: list usernames who follow me
+    // VIEW MY FOLLOWERS (approved only)
     @GetMapping("/me/followers")
-    public List<String> myFollowers(Authentication authentication) {
-        String me = authentication.getName();
-        return followService.getFollowerUsernames(me);
+    public List<String> followers(Authentication auth) {
+        return followService.getFollowerUsernames(auth.getName());
+    }
+
+    // VIEW MY FOLLOWING (approved only)
+    @GetMapping("/me/following")
+    public List<String> following(Authentication auth) {
+        return followService.getFollowingUsernames(auth.getName());
+    }
+
+    // VIEW PENDING REQUESTS
+    @GetMapping("/me/requests")
+    public List<String> pending(Authentication auth) {
+        return followService.getPendingRequests(auth.getName());
+    }
+
+    // APPROVE REQUEST
+    @PostMapping("/approve/{username}")
+    public Map<String,String> approve(@PathVariable String username,
+                                      Authentication auth) {
+
+        followService.approveFollow(auth.getName(), username);
+
+        return Map.of("message","Approved " + username);
+    }
+
+    // REJECT REQUEST
+    @DeleteMapping("/reject/{username}")
+    public Map<String,String> reject(@PathVariable String username,
+                                     Authentication auth) {
+
+        followService.rejectFollow(auth.getName(), username);
+
+        return Map.of("message","Rejected " + username);
     }
 }

@@ -34,8 +34,11 @@ public class EntryController {
 
     @GetMapping("/{id}")
     public EntryResponse getEntry(@PathVariable String id, Authentication authentication) {
-        return entryService.getEntryByIdForUser(id, authentication.getName());
+        String viewer = (authentication != null) ? authentication.getName() : null;
+        return entryService.getEntryVisibleToViewer(id, viewer);
     }
+
+
 
     @PutMapping("/{id}")
     public EntryResponse updateEntry(@PathVariable String id,
@@ -70,20 +73,29 @@ public class EntryController {
         return entryService.listPublicByUsername(username, page, size);
     }
 
+
     @GetMapping("/public/search")
-    public Page<EntryResponse> searchPublic(
+    public Page<EntryResponse> search(
+            Authentication authentication,
             @RequestParam String q,
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size) {
-        return entryService.searchPublic(q, page, size);
+
+        String viewer = authentication != null ? authentication.getName() : null;
+        return entryService.searchVisibleEntries(viewer, q, page, size);
     }
+
 
     // 🔹 Feed now just returns public entries
     @GetMapping("/feed")
     public Page<EntryResponse> getFeed(
+            Authentication authentication,
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) String tag) {
-        return entryService.listVisibleEntries(null, page, size, tag);
+
+        String viewer = authentication != null ? authentication.getName() : null;
+        return entryService.listVisibleEntries(viewer, page, size, tag);
     }
+
 }
