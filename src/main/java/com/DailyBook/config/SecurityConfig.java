@@ -30,19 +30,11 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // 🔹 adjust port to your Vite dev port (5173 or 5174)
-        configuration.setAllowedOrigins(List.of(
-                "http://127.0.0.1:5173",
-                "http://localhost:5173",
-                "http://localhost:3000",
-                "http://127.0.0.1:3000",
-                "https://daily-book.netlify.app",
-                "https://dailybook-x50p.onrender.com"
-
-        ));
-
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*")); // or narrower: List.of("Authorization", "Content-Type")
+        // ✅ Allow everything TEMPORARILY for debugging
+        configuration.setAllowedOriginPatterns(List.of("*"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("Authorization"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -53,7 +45,6 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // ✅ just call the bean method; no arguments
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
