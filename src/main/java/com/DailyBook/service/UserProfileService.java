@@ -19,9 +19,22 @@ public class UserProfileService {
 
     public UserProfileResponse getProfile(String userId /* actually username */) {
         UserProfile profile = userProfileRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Profile not found")); // or custom ProfileNotFoundException
+                .orElseGet(() -> {
+                    // create a default profile for this user
+                    UserProfile p = UserProfile.builder()
+                            .id(userId)          // you use username as id
+                            .username(userId)
+                            .bio(null)
+                            .profilePicture(null)
+                            .joinedAt(Instant.now())
+                            .build();
+                    return userProfileRepository.save(p);
+                });
+
         return toResponse(profile);
     }
+
+
 
     public UserProfileResponse updateProfile(String userId, UserProfileRequest request) {
         UserProfile profile = userProfileRepository.findById(userId)
