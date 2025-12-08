@@ -66,11 +66,14 @@ public class EntryController {
     }
 
     @GetMapping("/public/user/{username}")
-    public Page<EntryResponse> listPublicByUser(
+    public Page<EntryResponse> listVisibleByUser(
+            Authentication authentication,
             @PathVariable String username,
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size) {
-        return entryService.listPublicByUsername(username, page, size);
+
+        String viewer = (authentication != null) ? authentication.getName() : null;
+        return entryService.listVisibleByUsername(viewer, username, page, size);
     }
 
 

@@ -20,6 +20,12 @@ public interface EntryRepository extends MongoRepository<Entry, String> {
             Visibility visibility,
             Pageable pageable
     );
+    Page<Entry> findByUserIdAndVisibilityInOrderByCreatedAtDesc(
+            String userId,
+            List<Entry.Visibility> visibilities,
+            Pageable pageable
+    );
+
 
     Page<Entry> findByVisibilityOrderByCreatedAtDesc(
             Visibility visibility,

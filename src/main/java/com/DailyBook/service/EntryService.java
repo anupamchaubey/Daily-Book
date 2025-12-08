@@ -166,6 +166,56 @@ public class EntryService {
         return toResponse(entryRepository.save(entry));
     }
 
+    public Page<EntryResponse> listVisibleByUsername(
+            String viewerUsername,
+            String authorUsername,
+            Integer page,
+            Integer size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        // 1) Viewer is not logged in → only PUBLIC
+        if (viewerUsername == null) {
+            return listPublicByUsername(authorUsername, page, size);
+        }
+
+        // 2) Viewer is the author → all visibilities
+        if (viewerUsername.equals(authorUsername)) {
+            // PUBLIC + PRIVATE + FOLLOWERS_ONLY
+            List<Entry.Visibility> visibilities = List.of(
+                    Entry.Visibility.PUBLIC,
+                    Entry.Visibility.PRIVATE,
+                    FOLLOWERS_ONLY
+            );
+            Page<Entry> entries = entryRepository
+                    .findByUserIdAndVisibilityInOrderByCreatedAtDesc(
+                            authorUsername,
+                            visibilities,
+                            pageable
+                    );
+            return entries.map(this::toResponse);
+        }
+
+        // 3) Viewer follows the author → PUBLIC + FOLLOWERS_ONLY
+        boolean isFollower = followService.isFollowing(viewerUsername, authorUsername);
+        if (isFollower) {
+            List<Entry.Visibility> visibilities = List.of(
+                    Entry.Visibility.PUBLIC,
+                    FOLLOWERS_ONLY
+            );
+            Page<Entry> entries = entryRepository
+                    .findByUserIdAndVisibilityInOrderByCreatedAtDesc(
+                            authorUsername,
+                            visibilities,
+                            pageable
+                    );
+            return entries.map(this::toResponse);
+        }
+
+        // 4) Viewer does not follow → only PUBLIC
+        return listPublicByUsername(authorUsername, page, size);
+    }
+
     public List<EntryResponse> getUserEntries(String userId) {
         return entryRepository.findByUserId(userId)
                 .stream()
