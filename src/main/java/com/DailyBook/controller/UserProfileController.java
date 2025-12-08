@@ -18,25 +18,27 @@ public class UserProfileController {
     private final UserProfileService userProfileService;
 
     // ✅ Get logged-in user's profile
-    @GetMapping
+    @GetMapping("/me")
     public UserProfileResponse getMyProfile(Authentication authentication) {
         return userProfileService.getProfile(authentication.getName());
     }
 
     // ✅ Update logged-in user's profile
-    @PutMapping
-    public UserProfileResponse updateMyProfile(@Valid
-            @RequestBody UserProfileRequest request,
-            Authentication authentication) {
+    @PutMapping("/me")
+    public UserProfileResponse updateMyProfile(
+            @Valid @RequestBody UserProfileRequest request,
+            Authentication authentication
+    ) {
         return userProfileService.updateProfile(authentication.getName(), request);
     }
 
+    // search users
     @GetMapping("/search")
     public List<UserProfileResponse> searchUsers(@RequestParam String q) {
         return userProfileService.searchUsers(q);
     }
 
-    // Get another user's profile by username
+    // other user's profile by username
     @GetMapping("/{username}")
     public UserProfileResponse getUserProfile(@PathVariable String username) {
         return userProfileService.getByUsername(username);
