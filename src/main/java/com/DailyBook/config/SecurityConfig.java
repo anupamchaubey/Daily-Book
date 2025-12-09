@@ -64,7 +64,6 @@ public class SecurityConfig {
                                 "/",
                                 "/api/public/**",
                                 "/api/profile/search",
-                                "/api/profile/*",
                                 "/api/entries/public/**",
                                 "/api/entries/feed",
                                 "/api/users/**",
