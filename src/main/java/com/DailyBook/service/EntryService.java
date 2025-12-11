@@ -363,18 +363,23 @@ public class EntryService {
     private EntryResponse toResponse(Entry entry) {
         UserProfile profile = userProfileRepository.findById(entry.getUserId()).orElse(null);
 
+        // ensure non-null lists to avoid nulls in frontend
+        List<String> imageUrls = entry.getImageUrls() != null ? entry.getImageUrls() : List.of();
+        List<String> tags = entry.getTags() != null ? entry.getTags() : List.of();
+
         return EntryResponse.builder()
                 .id(entry.getId())
                 .title(entry.getTitle())
                 .content(entry.getContent())
-                .tags(entry.getTags())
+                .tags(tags)
                 .visibility(entry.getVisibility())
                 .createdAt(entry.getCreatedAt())
                 .updatedAt(entry.getUpdatedAt())
-                .imageUrls(entry.getImageUrls())
+                .imageUrls(imageUrls)
                 .authorId(entry.getUserId())
                 .authorUsername(profile != null ? profile.getUsername() : "Unknown")
                 .authorProfilePicture(profile != null ? profile.getProfilePicture() : null)
                 .build();
     }
+
 }
