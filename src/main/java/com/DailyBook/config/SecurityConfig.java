@@ -17,6 +17,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.access.AccessDeniedHandler;
+import jakarta.servlet.http.HttpServletResponse;
+import java.nio.charset.StandardCharsets;
 
 import java.util.List;
 
@@ -57,12 +61,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // ✅ just call the bean method; no arguments
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        // keep your public endpoints
                         .requestMatchers("/api/public/**").permitAll()
-
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/",
@@ -72,13 +75,46 @@ public class SecurityConfig {
                                 "/api/users/**",
                                 "/error"
                         ).permitAll()
+
+                        // Allow ANYONE to GET individual entries (so controller can enforce visibility)
+                        .requestMatchers(HttpMethod.GET, "/api/entries/**").permitAll()
+
+                        // everything else requires authentication
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
+                // handle auth/denied with friendly responses
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(authenticationEntryPoint())
+                        .accessDeniedHandler(accessDeniedHandler())
+                )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+    @Bean
+    public AuthenticationEntryPoint authenticationEntryPoint() {
+        return (request, response, authException) -> {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            String body = """
+            {"status":401,"error":"Unauthorized","message":"Invalid or missing token"}
+            """;
+            response.getOutputStream().write(body.getBytes(StandardCharsets.UTF_8));
+        };
+    }
+
+    @Bean
+    public AccessDeniedHandler accessDeniedHandler() {
+        return (request, response, accessDeniedException) -> {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setContentType("application/json");
+            String body = """
+            {"status":403,"error":"Forbidden","message":"Access denied"}
+            """;
+            response.getOutputStream().write(body.getBytes(StandardCharsets.UTF_8));
+        };
     }
 
     @Bean
