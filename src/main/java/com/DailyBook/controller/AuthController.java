@@ -1,5 +1,6 @@
 package com.DailyBook.controller;
 
+import com.DailyBook.dto.AuthenticationResponse;
 import com.DailyBook.dto.LoginRequest;
 import com.DailyBook.dto.RegisterRequest;
 import com.DailyBook.model.User;
@@ -29,19 +30,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody LoginRequest request) {
-        String token = authService.login(request);
-
-        long now = System.currentTimeMillis();
-        long expiresAt = now + 7L * 24 * 60 * 60 * 1000; // 7 days, same as jwt.expiration
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("token", token);
-        response.put("expiresAt", expiresAt);
-
-        return ResponseEntity.ok(response);
+    public ResponseEntity<AuthenticationResponse> login(@Valid @RequestBody LoginRequest request) {
+        AuthenticationResponse authResponse = authService.login(request);
+        return ResponseEntity.ok(authResponse);
     }
-
-
-
 }

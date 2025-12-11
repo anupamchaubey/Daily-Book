@@ -1,6 +1,7 @@
 package com.DailyBook.service;
 
 import com.DailyBook.config.JwtTokenProvider;
+import com.DailyBook.dto.AuthenticationResponse;
 import com.DailyBook.dto.LoginRequest;
 import com.DailyBook.dto.RegisterRequest;
 import com.DailyBook.exception.UserAlreadyExistsException;
@@ -58,7 +59,7 @@ public class AuthService {
         return "User registration done ...";
     }
 
-    public String login(LoginRequest request) {
+    public AuthenticationResponse login(LoginRequest request) {
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -69,7 +70,13 @@ public class AuthService {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // Use the authenticated principal’s name
-        return jwtTokenProvider.generateToken(authentication.getName());
+        // generate token
+        String token = jwtTokenProvider.generateToken(authentication.getName());
+
+        // compute numeric expiry in epoch millis using configured jwtExpiration
+        long now = System.currentTimeMillis();
+        long expiresAt = now + jwtTokenProvider.getJwtExpirationMillis();
+
+        return new AuthenticationResponse(token, expiresAt);
     }
 }

@@ -15,3 +15,4 @@ public class UserProfileRequest {
 
     private String profilePicture;
 }
+

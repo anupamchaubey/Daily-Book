@@ -18,8 +18,14 @@ public class JwtTokenProvider {
     @Value("${jwt.secret}")
     private String jwtSecret;
 
+    // inside com.DailyBook.config.JwtTokenProvider
+
     @Value("${jwt.expiration}")
     private long jwtExpiration;
+
+    public long getJwtExpirationMillis() {
+        return jwtExpiration;
+    }
 
     @PostConstruct
     public void logJwtConfig() {
