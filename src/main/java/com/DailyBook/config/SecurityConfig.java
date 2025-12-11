@@ -78,7 +78,7 @@ public class SecurityConfig {
 
                         // Allow ANYONE to GET individual entries (so controller can enforce visibility)
                         .requestMatchers(HttpMethod.GET, "/api/entries/**").permitAll()
-
+                        .requestMatchers(HttpMethod.GET, "/api/profile/**").permitAll()
                         // everything else requires authentication
                         .anyRequest().authenticated()
                 )
