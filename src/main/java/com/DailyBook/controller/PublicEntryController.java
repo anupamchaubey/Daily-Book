@@ -31,6 +31,10 @@ public class PublicEntryController {
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size
     ) {
-        return entryService.searchPublic(q, page, size);
+        if (q == null || q.trim().isEmpty()) {
+            return Page.empty();
+        }
+        return entryService.searchPublic(q.trim(), page, size);
     }
+
 }

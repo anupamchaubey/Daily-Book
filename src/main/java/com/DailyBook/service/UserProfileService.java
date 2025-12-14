@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -17,12 +16,12 @@ public class UserProfileService {
 
     private final UserProfileRepository userProfileRepository;
 
-    public UserProfileResponse getProfile(String userId /* actually username */) {
+    // Get or lazily create profile
+    public UserProfileResponse getProfile(String userId /* username */) {
         UserProfile profile = userProfileRepository.findById(userId)
                 .orElseGet(() -> {
-                    // create a default profile for this user
                     UserProfile p = UserProfile.builder()
-                            .id(userId)          // you use username as id
+                            .id(userId)
                             .username(userId)
                             .bio(null)
                             .profilePicture(null)
@@ -34,8 +33,7 @@ public class UserProfileService {
         return toResponse(profile);
     }
 
-
-
+    // Update logged-in user's profile
     public UserProfileResponse updateProfile(String userId, UserProfileRequest request) {
         UserProfile profile = userProfileRepository.findById(userId)
                 .orElse(UserProfile.builder()
@@ -55,16 +53,25 @@ public class UserProfileService {
         return toResponse(saved);
     }
 
-    public List<UserProfileResponse> searchUsers(String query) {
-        return userProfileRepository.findByUsernameContainingIgnoreCase(query)
+    // 🔍 Public people search
+    public List<UserProfileResponse> searchUsers(String q) {
+        if (q == null || q.trim().length() < 2) {
+            return List.of();
+        }
+
+        return userProfileRepository
+                .findTop15ByUsernameRegex(q.trim())
                 .stream()
                 .map(this::toResponse)
-                .collect(Collectors.toList());
+
+                .toList();
     }
 
+
+    // Get profile by username
     public UserProfileResponse getByUsername(String username) {
         UserProfile profile = userProfileRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found")); // or custom exception
+                .orElseThrow(() -> new RuntimeException("User not found"));
         return toResponse(profile);
     }
 

@@ -66,6 +66,21 @@ public interface EntryRepository extends MongoRepository<Entry, String> {
             Pageable pageable
     );
 
+    @Query("""
+{
+  $and: [
+    { visibility: ?0 },
+    { $text: { $search: ?1 } }
+  ]
+}
+""")
+    Page<Entry> searchPublicText(
+            Visibility visibility,
+            String query,
+            Pageable pageable
+    );
+
+
 
     // 🔍 Search MY posts only (with allowed visibilities)
     @Query("""

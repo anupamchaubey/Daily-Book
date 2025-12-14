@@ -281,12 +281,23 @@ public class EntryService {
         return entries.map(this::toResponse);
     }
 
-    public Page<EntryResponse> searchPublic(String q, Integer page, Integer size) {
+    public Page<EntryResponse> searchPublic(String q, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return entryRepository
-                .searchPublic(Entry.Visibility.PUBLIC, q, pageable)
-                .map(this::toResponse);
+
+        Page<Entry> result;
+        if (q.length() >= 3) {
+            result = entryRepository.searchPublicText(
+                    Entry.Visibility.PUBLIC, q, pageable
+            );
+        } else {
+            result = entryRepository.searchPublic(
+                    Entry.Visibility.PUBLIC, q, pageable
+            );
+        }
+
+        return result.map(this::toResponse);
     }
+
 
     // =========================
     //  Feed (visibility-aware)
