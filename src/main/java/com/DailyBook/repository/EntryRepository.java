@@ -82,6 +82,7 @@ public interface EntryRepository extends MongoRepository<Entry, String> {
 
 
 
+
     // 🔍 Search MY posts only (with allowed visibilities)
     @Query("""
     {
