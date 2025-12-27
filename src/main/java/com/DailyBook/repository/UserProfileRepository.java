@@ -18,7 +18,8 @@ public interface UserProfileRepository extends MongoRepository<UserProfile, Stri
     }
     """)
     List<UserProfile> findTop15ByUsernameRegex(String query);
-    @Query("{}")
-    List<UserProfile> findTop15By();
+
+    List<UserProfile> findTop15ByOrderByJoinedAtDesc();
+
 
 }

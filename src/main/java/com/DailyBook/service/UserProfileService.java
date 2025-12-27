@@ -68,7 +68,7 @@ public class UserProfileService {
     }
     //for home page recommender authors
     public List<UserProfileResponse> getSuggestedUsers(String currentUsername) {
-        return userProfileRepository.findTop15By()
+        return userProfileRepository.findTop15ByOrderByJoinedAtDesc()
                 .stream()
                 .filter(profile ->
                         currentUsername == null
