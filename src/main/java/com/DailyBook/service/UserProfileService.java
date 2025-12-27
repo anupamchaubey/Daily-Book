@@ -66,6 +66,21 @@ public class UserProfileService {
 
                 .toList();
     }
+    //for home page recommender authors
+    public List<UserProfileResponse> getSuggestedUsers(String currentUsername) {
+        return userProfileRepository.findTop15By()
+                .stream()
+                .filter(profile ->
+                        currentUsername == null
+                                || !profile.getUsername().equals(currentUsername)
+                )
+                .map(this::toResponse)
+                .toList();
+    }
+
+
+
+
 
 
     // Get profile by username

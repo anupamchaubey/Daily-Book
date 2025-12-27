@@ -3,6 +3,7 @@ package com.DailyBook.controller;
 import com.DailyBook.dto.UserProfileResponse;
 import com.DailyBook.service.UserProfileService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,4 +25,12 @@ public class PublicUserSearchController {
         }
         return userProfileService.searchUsers(q.trim());
     }
+    @GetMapping("/suggested")
+    public List<UserProfileResponse> suggestedUsers(Authentication authentication) {
+        String currentUsername =
+                authentication != null ? authentication.getName() : null;
+
+        return userProfileService.getSuggestedUsers(currentUsername);
+    }
+
 }
