@@ -19,7 +19,7 @@ public interface UserProfileRepository extends MongoRepository<UserProfile, Stri
     """)
     List<UserProfile> findTop15ByUsernameRegex(String query);
 
-    List<UserProfile> findTop15ByOrderByJoinedAtDesc();
+    List<UserProfile> findTop15ByOrderByJoinedAtAsc();
 
 
 }
