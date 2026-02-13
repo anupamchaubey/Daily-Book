@@ -42,6 +42,8 @@ public class SecurityConfig {
                 "http://localhost:3000",
                 "http://127.0.0.1:3000",
                 "http://localhost:8080",
+                "http://localhost:8081",
+                "http://192.168.1.71:8081/",
                 "http://192.168.1.80:80",
                 "https://dailybooks.netlify.app",
                 "https://daily-book.netlify.app",

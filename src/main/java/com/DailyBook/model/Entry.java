@@ -19,20 +19,16 @@ import java.util.List;
 @AllArgsConstructor
 @CompoundIndexes({
         @CompoundIndex(
-                name = "visibility_createdAt_idx",
-                def = "{'visibility': 1, 'createdAt': -1}"
-        ),
-        @CompoundIndex(
-                name = "entries_text_idx",
-                def = "{'title': 'text', 'content': 'text', 'tags': 'text'}"
+                name = "feed_idx",
+                def = "{'userId':1, 'visibility':1, 'createdAt':-1}"
         )
 })
+
 public class Entry {
 
     @Id
     private String id;
 
-    // you are storing username here
     private String userId;
 
     private String title;
@@ -41,7 +37,6 @@ public class Entry {
 
     private Visibility visibility = Visibility.PRIVATE;
 
-    // 🌆 multiple image URLs
     private List<String> imageUrls;
 
     @CreatedDate
