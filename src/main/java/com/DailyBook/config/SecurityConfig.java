@@ -47,8 +47,8 @@ public class SecurityConfig {
                 "http://192.168.1.80:80",
                 "https://dailybooks.netlify.app",
                 "https://daily-book.netlify.app",
+                "https://dailybook-kappa.vercel.app/",
                 "https://dailybook-x50p.onrender.com"
-
         ));
 
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
