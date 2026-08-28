@@ -1,5 +1,7 @@
 # DailyBook — Backend
 
+live: https://dailybook-kappa.vercel.app/
+
 DailyBook is a backend-first social blogging platform that enables users to write posts, follow authors, manage content visibility, and receive notifications.
 
 The system is inspired by Medium-like writing platforms and focuses on **secure authentication**, **social graph logic**, and **strict server-side authorization** rather than frontend-heavy features.
