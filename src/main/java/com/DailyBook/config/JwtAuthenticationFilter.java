@@ -1,13 +1,11 @@
 package com.DailyBook.config;
 
-import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,22 +15,13 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
-
     private final JwtTokenProvider jwtTokenProvider;
     private final CustomUserDetailsService customUserDetailsService;
-
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getServletPath();
-        return path.startsWith("/api/auth/")
-                || path.startsWith("/api/public/")
-                || path.startsWith("/api/entries/feed");    }
-
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -46,21 +35,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
             try {
-                username = jwtTokenProvider.getUsernameFromJwt(token);
-            } catch (MalformedJwtException ex) {
-                logger.warn("Invalid JWT token: {}", ex.getMessage());
-                // Optional: send 401 Unauthorized immediately and do not proceed
-                // response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                // return;
+                if (jwtTokenProvider.validateToken(token)) {
+                    username = jwtTokenProvider.getUsernameFromJwt(token);
+                }
             } catch (Exception ex) {
-                logger.error("Error extracting username from JWT", ex);
+                log.warn("Failed to extract username from JWT: {}", ex.getMessage());
             }
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+            try {
+                UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
 
-            if (jwtTokenProvider.validateToken(token)) {
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
                                 userDetails, null, userDetails.getAuthorities()
@@ -68,6 +54,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+            } catch (Exception ex) {
+                log.warn("Failed to set authentication context for user {}: {}", username, ex.getMessage());
             }
         }
 

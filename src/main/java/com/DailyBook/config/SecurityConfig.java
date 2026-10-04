@@ -12,16 +12,16 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.security.web.access.AccessDeniedHandler;
+
 import jakarta.servlet.http.HttpServletResponse;
 import java.nio.charset.StandardCharsets;
-
 import java.util.List;
 
 @Configuration
@@ -34,26 +34,9 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        // 🔹 adjust port to your Vite dev port (5173 or 5174)
-        configuration.setAllowedOrigins(List.of(
-                "http://127.0.0.1:5173",
-                "http://localhost:5173",
-                "http://localhost:3000",
-                "http://127.0.0.1:3000",
-                "http://localhost:8080",
-                "http://localhost:8081",
-                "http://192.168.1.71:8081/",
-                "http://192.168.1.80:80",
-                "https://dailybooks.netlify.app",
-                "https://daily-book.netlify.app",
-                "https://dailybook-kappa.vercel.app/",
-                "https://dailybook-x50p.onrender.com"
-        ));
-
+        configuration.setAllowedOrigins(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*")); // or narrower: List.of("Authorization", "Content-Type")
-        configuration.setAllowCredentials(true);
+        configuration.setAllowedHeaders(List.of("*"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
@@ -66,27 +49,17 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // keep your public endpoints
-                        .requestMatchers("/api/public/**").permitAll()
-                        .requestMatchers(
-                                "/api/auth/**",
-                                "/",
-                                "/api/profile/search",
-                                "/api/entries/public/**",
-                                "/api/entries/feed",
-                                "/api/users/**",
-                                "/error"
-                        ).permitAll()
-
-                        // Allow ANYONE to GET individual entries (so controller can enforce visibility)
-                        .requestMatchers(HttpMethod.GET, "/api/entries/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/profile/**").permitAll()
-                        // everything else requires authentication
+                        // Public endpoints
+                        .requestMatchers("/", "/health", "/api/auth/**").permitAll()
+                        // Public read operations on posts (service layer checks individual visibility rules)
+                        .requestMatchers(HttpMethod.GET, "/api/posts", "/api/posts/{id}", "/api/posts/user/**", "/api/posts/search").permitAll()
+                        // Public read user profile
+                        .requestMatchers(HttpMethod.GET, "/api/users/{username}").permitAll()
+                        // All other operations (POST, PUT, DELETE, /api/posts/feed, /api/posts/me, /api/follow/**, /api/users/me) require authentication
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
-                // handle auth/denied with friendly responses
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(authenticationEntryPoint())
                         .accessDeniedHandler(accessDeniedHandler())
@@ -95,13 +68,14 @@ public class SecurityConfig {
 
         return http.build();
     }
+
     @Bean
     public AuthenticationEntryPoint authenticationEntryPoint() {
         return (request, response, authException) -> {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             String body = """
-            {"status":401,"error":"Unauthorized","message":"Invalid or missing token"}
+            {"status":401,"error":"Unauthorized","message":"Invalid or missing authentication token"}
             """;
             response.getOutputStream().write(body.getBytes(StandardCharsets.UTF_8));
         };

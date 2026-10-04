@@ -18,8 +18,6 @@ import java.time.Instant;
         def = "{'followerUsername':1,'followeeUsername':1}",
         unique = true
 )
-
-
 public class Follow {
 
     @Id
@@ -28,13 +26,5 @@ public class Follow {
     private String followerUsername;
     private String followeeUsername;
 
-    // NEW FIELD
-    private Status status;
-
     private Instant createdAt;
-
-    public enum Status {
-        PENDING,
-        APPROVED
-    }
 }

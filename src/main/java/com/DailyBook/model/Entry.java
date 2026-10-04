@@ -23,7 +23,6 @@ import java.util.List;
                 def = "{'userId':1, 'visibility':1, 'createdAt':-1}"
         )
 })
-
 public class Entry {
 
     @Id
@@ -35,9 +34,8 @@ public class Entry {
     private String content;
     private List<String> tags;
 
+    @Builder.Default
     private Visibility visibility = Visibility.PRIVATE;
-
-    private List<String> imageUrls;
 
     @CreatedDate
     private Instant createdAt;

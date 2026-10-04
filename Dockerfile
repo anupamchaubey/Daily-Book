@@ -1,5 +1,5 @@
 # ---- Stage 1: Build the JAR ----
-FROM maven:3.9-eclipse-temurin-21-alpine AS build
+FROM maven:3.9-eclipse-temurin-17-alpine AS build
 
 WORKDIR /app
 
@@ -13,7 +13,7 @@ RUN mvn -q clean package -DskipTests
 
 
 # ---- Stage 2: Run the JAR ----
-FROM eclipse-temurin:21-jdk-alpine
+FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 

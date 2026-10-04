@@ -11,43 +11,27 @@ import java.util.List;
 
 public interface EntryRepository extends MongoRepository<Entry, String> {
 
-    // ===== BASIC FETCH =====
+    // Fetch entries authored by a specific user
+    Page<Entry> findByUserIdOrderByCreatedAtDesc(String userId, Pageable pageable);
 
-    List<Entry> findByUserId(String userId);
-
-    Page<Entry> findByUserIdAndVisibilityOrderByCreatedAtDesc(
-            String userId,
-            Visibility visibility,
-            Pageable pageable
-    );
+    // Fetch entries authored by a user with specific visibilities
     Page<Entry> findByUserIdAndVisibilityInOrderByCreatedAtDesc(
             String userId,
-            List<Entry.Visibility> visibilities,
-            Pageable pageable
-    );
-
-
-    Page<Entry> findByVisibilityOrderByCreatedAtDesc(
-            Visibility visibility,
-            Pageable pageable
-    );
-
-    Page<Entry> findByVisibilityAndTagsContainingIgnoreCase(
-            Visibility visibility,
-            String tag,
-            Pageable pageable
-    );
-
-    Page<Entry> findByUserIdInAndVisibilityIn(
-            List<String> usernames,
             List<Visibility> visibilities,
             Pageable pageable
     );
 
+    // Fetch all public entries
+    Page<Entry> findByVisibilityOrderByCreatedAtDesc(Visibility visibility, Pageable pageable);
 
-    // ===== SEARCH =====
+    // Fetch entries by multiple users with specific visibilities (e.g. for feed)
+    Page<Entry> findByUserIdInAndVisibilityInOrderByCreatedAtDesc(
+            List<String> userIds,
+            List<Visibility> visibilities,
+            Pageable pageable
+    );
 
-    // 🔍 Search PUBLIC posts (any user)
+    // Search public entries by keyword in title, content, or tags
     @Query("""
     {
       $and: [
@@ -65,65 +49,4 @@ public interface EntryRepository extends MongoRepository<Entry, String> {
             String query,
             Pageable pageable
     );
-
-    @Query("""
-{
-  $and: [
-    { visibility: ?0 },
-    { $text: { $search: ?1 } }
-  ]
-}
-""")
-    Page<Entry> searchPublicText(
-            Visibility visibility,
-            String query,
-            Pageable pageable
-    );
-
-
-
-
-    // 🔍 Search MY posts only (with allowed visibilities)
-    @Query("""
-    {
-      $and: [
-        { userId: ?0 },
-        { visibility : { $in : ?1 } },
-        { $or: [
-            { title:   { $regex: ?2, $options: 'i' } },
-            { content: { $regex: ?2, $options: 'i' } },
-            { tags:    { $regex: ?2, $options: 'i' } }
-        ]}
-      ]
-    }
-    """)
-    Page<Entry> searchByUserAndVisibilities(
-            String userId,
-            List<Visibility> visibilities,
-            String query,
-            Pageable pageable
-    );
-
-
-    // 🔍 Search FOLLOWED users posts (followers-only posts)
-    @Query("""
-    {
-      $and: [
-        { userId : { $in : ?0 } },
-        { visibility : { $in : ?1 } },
-        { $or: [
-            { title:   { $regex: ?2, $options: 'i' } },
-            { content: { $regex: ?2, $options: 'i' } },
-            { tags:    { $regex: ?2, $options: 'i' } }
-        ]}
-      ]
-    }
-    """)
-    Page<Entry> searchByUsersAndVisibilities(
-            List<String> userIds,
-            List<Visibility> visibilities,
-            String query,
-            Pageable pageable
-    );
-
 }

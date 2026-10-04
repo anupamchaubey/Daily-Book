@@ -10,15 +10,12 @@ import org.springframework.stereotype.Component;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
-import jakarta.annotation.PostConstruct;
 
 @Component
 public class JwtTokenProvider {
 
     @Value("${jwt.secret}")
     private String jwtSecret;
-
-    // inside com.DailyBook.config.JwtTokenProvider
 
     @Value("${jwt.expiration}")
     private long jwtExpiration;
@@ -27,23 +24,14 @@ public class JwtTokenProvider {
         return jwtExpiration;
     }
 
-    @PostConstruct
-    public void logJwtConfig() {
-        System.out.println("=== JWT CONFIG ===");
-        System.out.println("jwtExpiration = " + jwtExpiration + " ms");
-        System.out.println("≈ " + (jwtExpiration / 1000 / 60 / 60.0) + " hours");
-        System.out.println("==================");
-    }
-
-
     private Key getSigningKey() {
         byte[] decodedKey = Base64.getDecoder().decode(jwtSecret);
         return Keys.hmacShaKeyFor(decodedKey);
     }
 
-    public String generateToken(String username){
-        Date now=new Date();
-        Date expiryDate=new Date(now.getTime()+jwtExpiration);
+    public String generateToken(String username) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + jwtExpiration);
 
         return Jwts.builder()
                 .setSubject(username)
@@ -51,10 +39,9 @@ public class JwtTokenProvider {
                 .setExpiration(expiryDate)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
-
     }
 
-    public String getUsernameFromJwt(String token){
+    public String getUsernameFromJwt(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
@@ -63,13 +50,12 @@ public class JwtTokenProvider {
                 .getSubject();
     }
 
-    public boolean validateToken(String token){
-        try{
+    public boolean validateToken(String token) {
+        try {
             Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token);
             return true;
-        }catch (JwtException ex){
+        } catch (JwtException | IllegalArgumentException ex) {
             return false;
         }
-
     }
 }

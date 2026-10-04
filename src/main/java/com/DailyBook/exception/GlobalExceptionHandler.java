@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
 
     private ResponseEntity<Map<String, Object>> buildResponse(
             HttpStatus status,
-            Object errors,
+            Object message,
             HttpServletRequest request
     ) {
         Map<String, Object> body = new HashMap<>();
@@ -30,23 +30,20 @@ public class GlobalExceptionHandler {
         body.put("status", status.value());
         body.put("error", status.getReasonPhrase());
         body.put("path", request != null ? request.getRequestURI() : null);
-        body.put("errors", errors);   // unified key consumed easily by frontend
+        body.put("message", message);
         return new ResponseEntity<>(body, status);
     }
 
-    // ========== 4xx: CLIENT / DOMAIN ERRORS ==========
-
-    // 404 – Entry not found
+    // 404 – Resource Not Found (Entry or User)
     @ExceptionHandler(EntryNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleEntryNotFound(
             EntryNotFoundException ex,
             HttpServletRequest request
     ) {
-        log.warn("Entry not found: {}", ex.getMessage());
+        log.warn("Resource not found: {}", ex.getMessage());
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
-    // 404 – User not found
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleUserNotFound(
             UserNotFoundException ex,
@@ -56,23 +53,13 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
-    // 404 – Profile not found
-    @ExceptionHandler(ProfileNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleProfileNotFound(
-            ProfileNotFoundException ex,
-            HttpServletRequest request
-    ) {
-        log.warn("Profile not found: {}", ex.getMessage());
-        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request);
-    }
-
-    // 409 – User already exists (email/username conflict)
+    // 409 – Duplicate user or conflict
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<Map<String, Object>> handleUserAlreadyExists(
             UserAlreadyExistsException ex,
             HttpServletRequest request
     ) {
-        log.warn("User conflict: {}", ex.getMessage());
+        log.warn("Conflict: {}", ex.getMessage());
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
@@ -86,31 +73,30 @@ public class GlobalExceptionHandler {
         ex.getBindingResult().getFieldErrors().forEach(error ->
                 fieldErrors.put(error.getField(), error.getDefaultMessage())
         );
-        log.debug("Validation failed: {}", fieldErrors);
+        log.warn("Validation failed: {}", fieldErrors);
         return buildResponse(HttpStatus.BAD_REQUEST, fieldErrors, request);
     }
 
-    // 401 – Wrong username/password
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<Map<String, Object>> handleBadCredentials(
-            BadCredentialsException ex,
+    // 400 – Invalid argument (e.g., following oneself)
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalArgument(
+            IllegalArgumentException ex,
             HttpServletRequest request
     ) {
-        log.warn("Bad credentials for authentication: {}", ex.getMessage());
+        log.warn("Bad argument: {}", ex.getMessage());
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    // 401 – Authentication failures
+    @ExceptionHandler({BadCredentialsException.class, UsernameNotFoundException.class})
+    public ResponseEntity<Map<String, Object>> handleAuthenticationFailure(
+            Exception ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Authentication failed: {}", ex.getMessage());
         return buildResponse(HttpStatus.UNAUTHORIZED, "Invalid username or password", request);
     }
 
-    // 401 – Username not found during authentication
-    @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleUsernameNotFound(
-            UsernameNotFoundException ex,
-            HttpServletRequest request
-    ) {
-        log.warn("Username not found: {}", ex.getMessage());
-        return buildResponse(HttpStatus.UNAUTHORIZED, "Invalid username or password", request);
-    }
-
-    // 401 – JWT errors (expired, malformed, etc.)
     @ExceptionHandler(JwtException.class)
     public ResponseEntity<Map<String, Object>> handleJwtException(
             JwtException ex,
@@ -120,36 +106,23 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.UNAUTHORIZED, "Invalid or expired token", request);
     }
 
-    // 403 – Access denied (no permission)
+    // 403 – Access denied (authorization failed)
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, Object>> handleAccessDenied(
             AccessDeniedException ex,
             HttpServletRequest request
     ) {
         log.warn("Access denied: {}", ex.getMessage());
-        return buildResponse(HttpStatus.FORBIDDEN, "You do not have permission to access this resource", request);
+        return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage() != null ? ex.getMessage() : "Access denied", request);
     }
 
-    // ========== FALLBACK HANDLERS ==========
-
-    // 400 – Generic runtime exceptions you throw intentionally as bad requests
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Map<String, Object>> handleRuntimeException(
-            RuntimeException ex,
-            HttpServletRequest request
-    ) {
-        // If you want to log only unexpected ones, you can add conditions here
-        log.error("Runtime exception occurred", ex);
-        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
-    }
-
-    // 500 – Unexpected errors
+    // 500 – Unexpected server errors
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(
             Exception ex,
             HttpServletRequest request
     ) {
-        log.error("Unexpected error occurred", ex);
+        log.error("Internal server error: ", ex);
         return buildResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "Something went wrong, please try again later",

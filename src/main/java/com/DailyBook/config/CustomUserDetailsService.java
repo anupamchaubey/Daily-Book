@@ -22,14 +22,10 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
-        System.out.println("🔍 Looking up user: " + username);
-
-
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getUsername())
                 .password(user.getPassword())
-                .roles(user.getRoles().toArray(new String[0]))
+                .roles(user.getRoles() != null ? user.getRoles().toArray(new String[0]) : new String[]{"USER"})
                 .build();
     }
-
 }

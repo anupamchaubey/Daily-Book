@@ -12,31 +12,12 @@ public interface FollowRepository extends MongoRepository<Follow, String> {
             String followeeUsername
     );
 
-    boolean existsByFollowerUsernameAndFolloweeUsernameAndStatus(
-            String followerUsername,
-            String followeeUsername,
-            Follow.Status status
-    );
-
     void deleteByFollowerUsernameAndFolloweeUsername(
             String followerUsername,
             String followeeUsername
     );
 
-    List<Follow> findByFollowerUsernameAndStatus(
-            String followerUsername,
-            Follow.Status status
-    );
+    List<Follow> findByFollowerUsername(String followerUsername);
 
-
-
-    List<Follow> findByFolloweeUsernameAndStatus(
-            String followeeUsername,
-            Follow.Status status
-    );
-
-    Follow findByFollowerUsernameAndFolloweeUsername(
-            String followerUsername,
-            String followeeUsername
-    );
+    List<Follow> findByFolloweeUsername(String followeeUsername);
 }

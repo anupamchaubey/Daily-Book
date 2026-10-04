@@ -1,14 +1,18 @@
 package com.DailyBook.dto;
 
 import com.DailyBook.model.Entry;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.List;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class EntryResponse {
 
     private String id;
@@ -18,12 +22,5 @@ public class EntryResponse {
     private Entry.Visibility visibility;
     private Instant createdAt;
     private Instant updatedAt;
-
-    // 🌆 multiple image URLs
-    private List<String> imageUrls;
-
-    // 👤 Author Info
     private String authorId;
-    private String authorUsername;
-    private String authorProfilePicture;
 }
