@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Your Account — DailyBook</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body style="background: var(--bg-primary);">
+  <div class="site-wrapper">
+    <header class="site-header"></header>
+
+    <main class="main-content" style="display: flex; align-items: center; justify-content: center; min-height: calc(100vh - var(--nav-height) - 100px); padding: 40px 16px;">
+      <div class="auth-card" style="width: 100%; max-width: 460px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 36px 32px; box-shadow: var(--shadow-md);">
+        
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 28px;">
+          <div style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; background: var(--accent-subtle); color: var(--accent); border-radius: var(--radius-md); margin-bottom: 16px;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>
+            </svg>
+          </div>
+          <h1 style="font-size: 1.6rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">Join DailyBook</h1>
+          <p style="font-size: 0.9375rem; color: var(--text-secondary);">Start writing and sharing your perspective today</p>
+        </div>
+
+        <!-- Alert Container -->
+        <div id="register-alert" style="display: none; padding: 12px 14px; border-radius: var(--radius-md); margin-bottom: 20px; font-size: 0.875rem;"></div>
+
+        <!-- Form -->
+        <form id="register-form">
+          <div class="form-group">
+            <label for="username" class="form-label">Username</label>
+            <input 
+              type="text" 
+              id="username" 
+              name="username" 
+              class="form-input" 
+              placeholder="Between 3 and 30 characters" 
+              required 
+              minlength="3" 
+              maxlength="30"
+              autocomplete="username"
+              autofocus
+            />
+            <span class="form-hint">Used for your public author profile URL (@username).</span>
+          </div>
+
+          <div class="form-group">
+            <label for="email" class="form-label">Email Address</label>
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              class="form-input" 
+              placeholder="you@domain.com" 
+              required 
+              autocomplete="email"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="password" class="form-label">Password</label>
+            <div class="input-with-toggle">
+              <input 
+                type="password" 
+                id="password" 
+                name="password" 
+                class="form-input" 
+                placeholder="At least 6 characters" 
+                required 
+                minlength="6"
+                autocomplete="new-password"
+              />
+              <button type="button" class="input-toggle-btn" id="toggle-reg-password" aria-label="Toggle password visibility">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="confirm-password" class="form-label">Confirm Password</label>
+            <input 
+              type="password" 
+              id="confirm-password" 
+              class="form-input" 
+              placeholder="Repeat password" 
+              required 
+              minlength="6"
+              autocomplete="new-password"
+            />
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-lg" id="register-submit-btn" style="width: 100%; margin-top: 10px;">
+            <span class="btn-text">Create Account</span>
+          </button>
+        </form>
+
+        <!-- Footer Link -->
+        <div style="text-align: center; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-light); font-size: 0.875rem; color: var(--text-secondary);">
+          Already have an account? 
+          <a href="login.html" style="color: var(--accent); font-weight: 600;">Sign in here</a>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer"></footer>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      Auth.requireGuest('feed.html');
+
+      App.renderHeader();
+      App.renderFooter();
+
+      // Password toggle
+      const pwdInput = document.getElementById('password');
+      const toggleBtn = document.getElementById('toggle-reg-password');
+      toggleBtn.addEventListener('click', () => {
+        const isPassword = pwdInput.type === 'password';
+        pwdInput.type = isPassword ? 'text' : 'password';
+      });
+
+      const form = document.getElementById('register-form');
+      const alertBox = document.getElementById('register-alert');
+      const submitBtn = document.getElementById('register-submit-btn');
+      const btnText = submitBtn.querySelector('.btn-text');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        alertBox.style.display = 'none';
+
+        const username = document.getElementById('username').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+
+        // Validation
+        if (username.length < 3 || username.length > 30) {
+          showAlert('Username must be between 3 and 30 characters.', 'error');
+          return;
+        }
+
+        if (password.length < 6) {
+          showAlert('Password must be at least 6 characters long.', 'error');
+          return;
+        }
+
+        if (password !== confirmPassword) {
+          showAlert('Passwords do not match.', 'error');
+          return;
+        }
+
+        submitBtn.disabled = true;
+        btnText.innerHTML = '<span class="btn-spinner"></span> Creating account...';
+
+        try {
+          await Auth.register(username, email, password);
+          showAlert('Account created successfully! Logging you in...', 'success');
+          Toast.success('Registration successful!');
+
+          // Automatically log the user in
+          try {
+            await Auth.login(username, password);
+            setTimeout(() => {
+              window.location.href = 'feed.html';
+            }, 600);
+          } catch {
+            setTimeout(() => {
+              window.location.href = 'login.html';
+            }, 1000);
+          }
+        } catch (err) {
+          submitBtn.disabled = false;
+          btnText.textContent = 'Create Account';
+
+          let message = err.message || 'Registration failed.';
+          if (err.status === 409) {
+            message = 'This username or email is already registered. Please sign in or use a different one.';
+          }
+          showAlert(message, 'error');
+        }
+      });
+
+      function showAlert(msg, type = 'error') {
+        alertBox.style.display = 'block';
+        if (type === 'error') {
+          alertBox.style.background = 'var(--danger-light)';
+          alertBox.style.color = 'var(--danger)';
+          alertBox.style.border = '1px solid var(--danger-border)';
+        } else {
+          alertBox.style.background = 'var(--success-light)';
+          alertBox.style.color = 'var(--success)';
+          alertBox.style.border = '1px solid var(--success-border)';
+        }
+        alertBox.textContent = msg;
+      }
+    });
+  </script>
+</body>
+</html>

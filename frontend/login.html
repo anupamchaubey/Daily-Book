@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — DailyBook</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body style="background: var(--bg-primary);">
+  <div class="site-wrapper">
+    <header class="site-header"></header>
+
+    <main class="main-content" style="display: flex; align-items: center; justify-content: center; min-height: calc(100vh - var(--nav-height) - 100px); padding: 40px 16px;">
+      <div class="auth-card" style="width: 100%; max-width: 440px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 36px 32px; box-shadow: var(--shadow-md);">
+        
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 28px;">
+          <div style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; background: var(--accent-subtle); color: var(--accent); border-radius: var(--radius-md); margin-bottom: 16px;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <h1 style="font-size: 1.6rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">Welcome back</h1>
+          <p style="font-size: 0.9375rem; color: var(--text-secondary);">Enter your credentials to access your account</p>
+        </div>
+
+        <!-- Alert Container -->
+        <div id="login-alert" style="display: none; padding: 12px 14px; border-radius: var(--radius-md); margin-bottom: 20px; font-size: 0.875rem;"></div>
+
+        <!-- Form -->
+        <form id="login-form">
+          <div class="form-group">
+            <label for="username" class="form-label">Username</label>
+            <input 
+              type="text" 
+              id="username" 
+              name="username" 
+              class="form-input" 
+              placeholder="e.g. alex_writer" 
+              required 
+              autocomplete="username"
+              autofocus
+            />
+          </div>
+
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <label for="password" class="form-label">Password</label>
+            </div>
+            <div class="input-with-toggle">
+              <input 
+                type="password" 
+                id="password" 
+                name="password" 
+                class="form-input" 
+                placeholder="Enter your password" 
+                required 
+                autocomplete="current-password"
+              />
+              <button type="button" class="input-toggle-btn" id="toggle-password" aria-label="Toggle password visibility">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-lg" id="login-submit-btn" style="width: 100%; margin-top: 10px;">
+            <span class="btn-text">Sign In</span>
+          </button>
+        </form>
+
+        <!-- Footer Link -->
+        <div style="text-align: center; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-light); font-size: 0.875rem; color: var(--text-secondary);">
+          Don't have an account yet? 
+          <a href="register.html" style="color: var(--accent); font-weight: 600;">Create one</a>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer"></footer>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Route guard: if logged in, send to feed
+      Auth.requireGuest('feed.html');
+
+      App.renderHeader();
+      App.renderFooter();
+
+      // Password visibility toggle
+      const pwdInput = document.getElementById('password');
+      const toggleBtn = document.getElementById('toggle-password');
+      toggleBtn.addEventListener('click', () => {
+        const isPassword = pwdInput.type === 'password';
+        pwdInput.type = isPassword ? 'text' : 'password';
+        toggleBtn.innerHTML = isPassword
+          ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>'
+          : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
+      });
+
+      // Handle form submission
+      const form = document.getElementById('login-form');
+      const alertBox = document.getElementById('login-alert');
+      const submitBtn = document.getElementById('login-submit-btn');
+      const btnText = submitBtn.querySelector('.btn-text');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        alertBox.style.display = 'none';
+
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+
+        if (!username || !password) {
+          showAlert('Please fill in both username and password.', 'error');
+          return;
+        }
+
+        // Loading state
+        submitBtn.disabled = true;
+        btnText.innerHTML = '<span class="btn-spinner"></span> Signing in...';
+
+        try {
+          await Auth.login(username, password);
+          Toast.success(`Welcome back, ${username}!`);
+
+          // Redirect to target URL or feed
+          const urlParams = new URLSearchParams(window.location.search);
+          const redirectUrl = urlParams.get('redirect') || 'feed.html';
+          setTimeout(() => {
+            window.location.href = redirectUrl;
+          }, 300);
+        } catch (err) {
+          submitBtn.disabled = false;
+          btnText.textContent = 'Sign In';
+
+          let message = err.message || 'Login failed. Please check your credentials.';
+          if (err.status === 401) {
+            message = 'Invalid username or password. Please try again.';
+          } else if (err.isNetworkError) {
+            message = 'Unable to connect to DailyBook backend. Please make sure the server is running on port 8080.';
+          }
+          showAlert(message, 'error');
+        }
+      });
+
+      function showAlert(msg, type = 'error') {
+        alertBox.style.display = 'block';
+        if (type === 'error') {
+          alertBox.style.background = 'var(--danger-light)';
+          alertBox.style.color = 'var(--danger)';
+          alertBox.style.border = '1px solid var(--danger-border)';
+        } else {
+          alertBox.style.background = 'var(--success-light)';
+          alertBox.style.color = 'var(--success)';
+          alertBox.style.border = '1px solid var(--success-border)';
+        }
+        alertBox.textContent = msg;
+      }
+    });
+  </script>
+</body>
+</html>

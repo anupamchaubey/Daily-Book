@@ -1,0 +1,155 @@
+/* ==========================================================================
+   DailyBook Responsive Styles
+   Breakpoints: 1024px, 768px, 640px, 480px, 360px
+   ========================================================================== */
+
+/* Tablet & Smaller Desktops */
+@media (max-width: 1024px) {
+  .feed-layout {
+    grid-template-columns: 1fr 300px !important;
+    gap: 28px !important;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+}
+
+/* Tablet Portrait & Mobile Landscape */
+@media (max-width: 768px) {
+  :root {
+    --nav-height: 60px;
+  }
+
+  .nav-search {
+    display: none; /* Collapses to search icon/page on mobile */
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+  }
+
+  .nav-links-desktop {
+    display: none !important;
+  }
+
+  .feed-layout {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+
+  .feed-sidebar {
+    order: -1; /* Sidebar stats above or collapsible */
+    margin-bottom: 12px;
+  }
+
+  .visibility-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+
+  .article-title {
+    font-size: 1.85rem;
+  }
+
+  .article-meta-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .article-content {
+    font-size: 1.0625rem;
+  }
+
+  .profile-header-card {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+
+  .profile-stats-row {
+    justify-content: center;
+  }
+
+  .hero-headline {
+    font-size: 2.25rem !important;
+  }
+
+  .hero-cta-group {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .hero-cta-group .btn {
+    width: 100%;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Small Phones (480px and below) */
+@media (max-width: 480px) {
+  .container, .reading-container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .post-card {
+    padding: 18px 16px;
+  }
+
+  .post-card-title {
+    font-size: 1.15rem;
+  }
+
+  .post-card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .toast-container {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+  }
+
+  .toast {
+    min-width: unset;
+    width: 100%;
+  }
+
+  .auth-card {
+    padding: 24px 18px !important;
+  }
+}
+
+/* Ultra Small (320px - 360px) */
+@media (max-width: 360px) {
+  .hero-headline {
+    font-size: 1.85rem !important;
+  }
+
+  .btn {
+    padding: 8px 12px;
+    font-size: 0.8125rem;
+  }
+
+  .article-title {
+    font-size: 1.5rem;
+  }
+}

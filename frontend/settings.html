@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings & Configuration — DailyBook</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <div class="site-wrapper">
+    <header class="site-header"></header>
+
+    <main class="main-content">
+      <div class="container" style="max-width: 720px;">
+        
+        <div style="margin-bottom: 32px;">
+          <h1 style="font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text-primary); margin-bottom: 6px;">
+            Preferences & Settings
+          </h1>
+          <p style="color: var(--text-secondary); font-size: 0.9375rem;">
+            Manage platform appearance, session state, and backend connection details.
+          </p>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+
+          <!-- Card 1: Backend Connection -->
+          <div style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 28px; box-shadow: var(--shadow-xs);">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+              <div style="width: 36px; height: 36px; border-radius: var(--radius-md); background: var(--accent-subtle); color: var(--accent); display: flex; align-items: center; justify-content: center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="m8 17 4-4 4 4"/><path d="M12 13v9"/></svg>
+              </div>
+              <div>
+                <h2 style="font-size: 1.15rem; font-weight: 600; color: var(--text-primary);">Backend Server URL</h2>
+                <p style="font-size: 0.8125rem; color: var(--text-muted);">Configure the Spring Boot REST API endpoint.</p>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 16px;">
+              <label for="backend-url-input" class="form-label">API Base URL</label>
+              <div style="display: flex; gap: 10px;">
+                <input 
+                  type="url" 
+                  id="backend-url-input" 
+                  class="form-input" 
+                  placeholder="http://localhost:8080" 
+                  style="font-family: var(--font-mono); font-size: 0.875rem;"
+                />
+                <button type="button" class="btn btn-outline" id="test-connection-btn">
+                  Test Ping
+                </button>
+              </div>
+              <span id="connection-status" class="form-hint" style="margin-top: 6px;"></span>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+              <button type="button" class="btn btn-secondary btn-sm" id="reset-url-btn">Reset to Default</button>
+              <button type="button" class="btn btn-primary btn-sm" id="save-url-btn">Save URL</button>
+            </div>
+          </div>
+
+          <!-- Card 2: Appearance & Theme -->
+          <div style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 28px; box-shadow: var(--shadow-xs);">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+              <div style="width: 36px; height: 36px; border-radius: var(--radius-md); background: var(--accent-subtle); color: var(--accent); display: flex; align-items: center; justify-content: center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+              </div>
+              <div>
+                <h2 style="font-size: 1.15rem; font-weight: 600; color: var(--text-primary);">Interface Theme</h2>
+                <p style="font-size: 0.8125rem; color: var(--text-muted);">Choose your preferred reading color scheme.</p>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px;">
+              <div class="visibility-card" id="theme-card-light" data-theme-val="light" style="cursor: pointer;">
+                <div class="visibility-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/></svg>
+                  <span>Light Mode</span>
+                </div>
+                <div class="visibility-desc">Editorial warm off-white palette for daylight reading.</div>
+              </div>
+
+              <div class="visibility-card" id="theme-card-dark" data-theme-val="dark" style="cursor: pointer;">
+                <div class="visibility-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                  <span>Dark Mode</span>
+                </div>
+                <div class="visibility-desc">Calm charcoal palette engineered for nighttime writing.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Account & Session Information -->
+          <div id="account-settings-card" style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 28px; box-shadow: var(--shadow-xs);">
+            <!-- Populated via script -->
+          </div>
+
+        </div>
+
+      </div>
+    </main>
+
+    <footer class="site-footer"></footer>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      App.renderHeader('settings');
+      App.renderFooter();
+
+      // Backend URL Setup
+      const urlInput = document.getElementById('backend-url-input');
+      const saveBtn = document.getElementById('save-url-btn');
+      const resetBtn = document.getElementById('reset-url-btn');
+      const testBtn = document.getElementById('test-connection-btn');
+      const statusSpan = document.getElementById('connection-status');
+
+      urlInput.value = CONFIG.API_BASE_URL;
+
+      saveBtn.addEventListener('click', () => {
+        const val = urlInput.value.trim();
+        CONFIG.setApiBaseUrl(val);
+        Toast.success('Backend URL updated to ' + CONFIG.API_BASE_URL);
+      });
+
+      resetBtn.addEventListener('click', () => {
+        CONFIG.setApiBaseUrl(null);
+        urlInput.value = CONFIG.API_BASE_URL;
+        Toast.info('Reset backend URL to default: ' + CONFIG.DEFAULT_API_BASE_URL);
+      });
+
+      testBtn.addEventListener('click', async () => {
+        statusSpan.textContent = 'Testing connection...';
+        statusSpan.style.color = 'var(--text-muted)';
+        try {
+          const resp = await fetch(`${urlInput.value.trim()}/health`).catch(() => fetch(`${urlInput.value.trim()}/api/posts`));
+          if (resp) {
+            statusSpan.textContent = 'Connected successfully! Server is responding.';
+            statusSpan.style.color = 'var(--success)';
+            Toast.success('Connection verified!');
+          }
+        } catch {
+          statusSpan.textContent = 'Failed to reach backend server. Please verify port and host.';
+          statusSpan.style.color = 'var(--danger)';
+          Toast.error('Connection test failed.');
+        }
+      });
+
+      // Theme Selector Cards
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+      updateThemeCards(currentTheme);
+
+      document.getElementById('theme-card-light').addEventListener('click', () => {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('dailybook_theme', 'light');
+        updateThemeCards('light');
+        App.updateThemeToggleIcon('light');
+      });
+
+      document.getElementById('theme-card-dark').addEventListener('click', () => {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('dailybook_theme', 'dark');
+        updateThemeCards('dark');
+        App.updateThemeToggleIcon('dark');
+      });
+
+      function updateThemeCards(theme) {
+        document.getElementById('theme-card-light').classList.toggle('selected', theme === 'light');
+        document.getElementById('theme-card-dark').classList.toggle('selected', theme === 'dark');
+      }
+
+      // Account & Session Information
+      const accountCard = document.getElementById('account-settings-card');
+      const isAuthed = Auth.isAuthenticated();
+
+      if (isAuthed) {
+        const user = Auth.getUser() || {};
+        accountCard.innerHTML = `
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <h2 style="font-size: 1.15rem; font-weight: 600; color: var(--text-primary);">Account & Session</h2>
+            <span class="badge badge-public">Active Session</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.9375rem; margin-bottom: 20px;">
+            <div><strong>Username:</strong> @${App.escapeHtml(user.username || 'unknown')}</div>
+            ${user.email ? `<div><strong>Email:</strong> ${App.escapeHtml(user.email)}</div>` : ''}
+            ${user.roles ? `<div><strong>Roles:</strong> ${user.roles.join(', ')}</div>` : ''}
+          </div>
+          <button class="btn btn-danger-outline btn-sm" onclick="Auth.logout('login.html')">
+            End Session & Sign Out
+          </button>
+        `;
+      } else {
+        accountCard.innerHTML = `
+          <h2 style="font-size: 1.15rem; font-weight: 600; color: var(--text-primary); margin-bottom: 8px;">Account Session</h2>
+          <p style="font-size: 0.9375rem; color: var(--text-secondary); margin-bottom: 16px;">You are currently browsing as a guest.</p>
+          <a href="login.html" class="btn btn-primary btn-sm">Sign In to Your Account</a>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>
