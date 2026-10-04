@@ -10,7 +10,7 @@ class ApiClient {
   }
 
   get baseUrl() {
-    return (window.CONFIG && window.CONFIG.API_BASE_URL) || 'http://localhost:8080';
+    return (window.CONFIG && window.CONFIG.API_BASE_URL) || 'https://dailybook-backend.onrender.com';
   }
 
   getToken() {

@@ -4,8 +4,9 @@
  */
 
 const CONFIG = {
+  
   // Default Spring Boot backend URL
-  DEFAULT_API_BASE_URL: 'http://localhost:8080',
+DEFAULT_API_BASE_URL: 'https://dailybook-backend.onrender.com',
 
   // Retrieves the active API base URL (checks localStorage override, window override, or fallback)
   get API_BASE_URL() {
